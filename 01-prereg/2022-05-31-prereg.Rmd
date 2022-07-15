@@ -1,0 +1,708 @@
+---
+title           : "Person and Situation as Coupled Systems"
+shorttitle      : "Person and Situation as Coupled Systems"
+date            : "`r Sys.setlocale('LC_TIME', 'C'); format(Sys.time(), '%d\\\\. %B %Y')`"
+author: 
+  - name        : Emorie D Beck
+    affiliation : Northwestern University Feinberg School of Medicine
+  - name        : Niclas Kuper
+    affiliation : Universität Bielefeld
+  - name        : Kai T Horstmann
+    affiliation : Humboldt-Universität zu Berlin
+  - name        : Joshua J Jackson
+    affiliation : Washington University in St. Louis
+# affiliation:
+#   - id          : 1
+#     institution : 
+#   - id          : 2
+#     institution : Konstanz Business School
+#   - id          : 3
+#     institution : Konstanz Business School
+#   - id          : 4
+#     institution : Washington University in St. Louis
+# output: prereg::cos_prereg
+output:
+  html_document:
+    theme: united
+    highlight: tango
+    df_print: paged
+    code_folding: show
+    toc: true
+    toc_float: true
+editor_options: 
+  
+  chunk_output_type: console
+bibliography: r-references.bib
+biblio-style: "apalike"
+csl: "apa-6th-edition.csl"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+```
+
+```{r}
+library(knitr)
+library(lubridate)
+library(plyr)
+library(tidyverse)
+library(brms)
+library(ggquiver)
+```
+
+# Study Information
+
+## Title
+
+```{=html}
+<!-- Provide the working title of your study. It may be the same title that you submit for publication of your final manuscript, but it is not a requirement. The title should be a specific and informative description of a project. Vague titles such as 'Fruit fly preregistration plan' are not appropriate.
+
+Example: Effect of sugar on brownie tastiness. -->
+```
+`r rmarkdown::metadata$title`
+
+## Description
+
+```{=html}
+<!-- Please give a brief description of your study, including some background, the purpose of the of the study, or broad research questions. The description should be no longer than the length of an abstract. It can give some context for the proposed study, but great detail is not needed here for your preregistration.
+
+Example: Though there is strong evidence to suggest that sugar affects taste preferences, the effect has never been demonstrated in brownies. Therefore, we will measure taste preference for four different levels of sugar concentration in a standard brownie recipe to determine if the effect exists in this pastry. -->
+```
+
+There is ample evidence that situation characteristics and people’s momentary states are meaningfully related (e.g., Horstmann et al., 2021; Sherman et al., 2015). Moreover, there are sizable individual differences in these contingencies (Kuper et al., 2022). However, this work leaves open several questions on the transactions (Rauthmann, 2021) between situation characteristics and personality states over time. Most studies focus on concurrent within-person associations rather than explicitly examining changes over time (but see Rauthmann et al., 2016). Moreover, previous work used classical linear models rather than dynamic system models thatwhich may better reflect the nature of the processes at hand. In the present project, we aim to investigate non-linear dynamics between changes in personality states and situation characteristics using both person-specific and multilevel change-as-outcome models [@butner_utilizing_2015; @butner_multilevel_2005; @butler_quantifying_2019]. Specifically, we will predict subsequent changes in both personality states and situation characteristics by each other and their interaction. In addition to examining average effects across participants, we will focus on individual differences in these relations as well as the associations of these individual differences among each other.
+
+There has long been recognition that person and situation characteristics interact in producing behavior. However, estimating such person-situation interactions or transactions has remained largely elusive. There are several reasons why this is the case. First, work on person-situation transactions often focuses on so-called fixed effects, or person-situation transactions on average across people, even when looking at within-person patterns. Such approaches fail to recognize that average effects of 0 may indicate a non-triviual number of individuals who have positive or negative effects. Second, most work on person-situation transactions assumes linear relationships between persons and situations. However, if person and situation variables are considered as systems, it makes little sense to consider their relationships as linear. Rather, they should be captured as non-linear interacting processes within a system.
+
+The proposed project aims to investigate non-linear dynamics between changes in personality states and situational states using multilevel coupled oscillator models .
+
+## Research Questions
+
+***RQ1a: Average attractor strength***: Are (subsequent) changes in personality states on average associated with current levels of personality states, and are (subsequent) changes in situation characteristics on average associated with current levels of situation characteristics?
+***RQ1b: Individual differences in attractor strength and location:*** What is the magnitude of individual differences in attractor strength and location for personality states and situation characteristics? 
+
+***RQ2a: Average dynamics between situation characteristics and personality states:*** Do situation characteristics predict changes in personality states (main effect) and do personality states predict changes in situation characteristics (main effect)? Do situation characteristics moderate the effects of personality state levels on change in personality states (interaction effect) and do personality states moderate the effects of situation characteristic levels on change in situation characteristics (interaction effect)?
+***RQ2b: Individual differences in dynamics between situation characteristics and personality states:*** What is the magnitude of individual differences in the effects of personality states on change in situation characteristics (main effect) and in the effects of situation characteristics on change in personality states (main effect), respectively?
+
+***RQ3a: Correlations among individual differences in attractor strength and location:*** How are individual differences in attractor strength intercorrelated between personality states and situation characteristics? How are individual differences in attractor location intercorrelated between personality states and situation characteristics? How do individual differences in attractor strength and location correlate with each other for the same variable (personality state or situation characteristic) and across variables? 
+***RQ3b: Correlations among individual differences in dynamics between situation characteristics and personality states:*** How do individual differences in the effects of personality states and situation characteristic levels on change in personality states and situation characteristics (main effects), respectively, intercorrelate with each other?
+***RQ3c: Correlations with Big Five personality traits:*** How do individual differences in attractor strength and location (see RQ1) and individual differences in dynamics between situation characteristics and personality states (see RQ2) relate to self-reported Big Five personality traits? 
+
+For all analyses involving both personality states (5) and situation characteristics (8), we will examine all 40 variable combinations but expect larger effect sizes (average effects, magnitude of individual differences, correlations between individual differences) for the 13 variable pairs denoted in Table 1. These variable pairs are based on theoretically expected associations between personality states and situation characteristics and were similarly used in previous work (e.g., Kuper et al., 2021, 2022; Rauthmann et al., 2016).
+
+## Hypotheses
+
+**RQ1a:** We expect sizable average associations of level and change (attractor strength) for both personality states and situation characteristics. 
+RQ1b: We expect sizable individual differences for both attractor strength and location.
+
+**RQ2a:** We exploratorily examine within-person effects of personality state levels on situation characteristic change and vice versa (main effects) as well as interactions between situation characteristics and personality states. Following previous work on situation characteristic – state contingencies (Kuper et al., 2022) and transactions between situation characteristics and personality states (Rauthmann et al., 2016), we expect stronger main and interaction effects for theoretically meaningful variable combinations (see Table 1).  
+**RQ2b:** We expect sizable individual differences in the associations of personality state levels with changes in situation characteristics and vice versa (main effects).
+
+**RQ3a:** We exploratorily examine associations of individual differences in attractor strength across situation characteristics and personality states. We expect some sizable associations between attractor location of situation characteristics and personality states, in line with previous work reporting on mean levels (Kuper et al., 2022). For individual differences in attractor strength and location (both same variable and across variables), we will exploratorily examine both linear and curvilinear associations. 
+**RQ3b:** We will exploratorily examine correlations for individual differences in dynamics between situation characteristics and personality states. 
+**RQ3c:** We expect the Big Five personality traits to be most strongly associated with the attractor location of the corresponding personality states. We will exploratorily examine linear and curvilinear associations between the Big Five traits and attractor strengths. Finally, we will exploratorily examine associations between the Big Five traits and individual differences in dynamics between situation characteristics and personality states. Based on previous work, on personality state - situation characteristic contingencies, we expect these associations to be small. 
+
+For all analyses involving both personality states (5) and situation characteristics (8), we will examine all 40 variable combinations but expect larger effect sizes (average effects, magnitude of individual differences, correlations between individual differences) for the 13 variable pairs denoted in Table 1. These variable pairs are based on theoretically expected associations between personality states and situation characteristics and were similarly used in previous work (e.g., Kuper et al., 2021, 2022; Rauthmann et al., 2016).
+
+```{r, echo = F, message = 'hide', warning = F}
+tribble(
+  ~Situation  , ~E, ~A, ~C, ~N, ~O,
+  "Duty"      , "", "","+", "", "",
+  "Intellect" , "", "", "", "","+",
+  "Adversity" , "","-", "","+", "",
+  "Mating"    ,"+", "", "", "", "",
+  "pOsitivity","+", "", "","-", "",
+  "Negativity","-", "", "","+", "",
+  "Deception" , "","-", "","+", "",
+  "Sociality" ,"+","+", "", "", ""
+) %>% kable(.)
+```
+
+# Data Description
+
+## Datasets used
+
+<!-- Name and briefly describe the dataset(s), and if applicable, the subsets of the data you plan to use.Useful information to include here is the type of data (e.g., cross-sectional or longitudinal), the general content of the questions, and some details about the respondents. In the case of longitudinal data, information about the survey’s waves is useful as well. Mention the most relevant information so that readers do not have to search for the information themselves. -->
+
+### Sample 1: Personality and Interpersonal Roles Study (PAIRS)
+
+The PAIRS study was a seven wave longitudinal study collected at Washington University in St. Louis. Approximately 350 individuals completed at least one wave of survey data, experience sampling method data, and electronically activated recorder data. In the proposed study, we will be using the third wave of ESM data, which corresponds to the seventh wave of survey data. Although all waves collected a variety of data on personality, emotions, situations, and more, the third wave additionally included a measure of situation characteristics, the DIAMONDS. In the proposed study, we will make use of 9 indicators of Big Five personality (representing each of the Big Five except Openness) and 8 indicators of situations, which were included in wave 3.
+
+### Sample 2: Intentional Personality Change Study (IPCS)
+
+The IPCS study is an ongoing longitudinal study collected at Washington University in St. Louis. Approximately 200 individuals completed the first wave of survey and ESM responses. In the proposed study, we will use the first wave of ESM data, which includes both measures of personality states as well as the DIAMONDS indicators. Specifically, we will use 15 indicators of Big Five personality (3 for each of the Big Five) and 8 indicators of situations.
+
+### Sample 3: Data from Sherman et al., 2015
+
+Sherman and colleagues (2015) collected a single wave of experience sampling responses at Florida Atlantic University. Approximately 200 individuals responded to ESM surveys 8 times per day for one week. In the proposed study, we will use the measures of personality states (7 items from HEXACO) as well as the 8 items in the S8-I DIAMONDS scale.
+
+### Sample 4: Data from @horstmann_unveiling_2021
+
+Horstmann and colleages (2021) conducted a reanalysis of Sherman and colleagues' data and collected a replication and follow-up study in a German sample. Approximately 200 individuals completed ESM surveys 3 hours apart for two weeks. In the proposed study, we will use the measures of personality states (7 items from HEXACO) as well as the 8 items in the S8-I DIAMONDS scale.
+
+## Data availability
+
+<!-- Specify the degree to which the datasets are open or publicly available. -->
+
++--------------------------------------+---------------------------------------------------+
+| Dataset                              | Availability                                      |
++======================================+===================================================+
+| Sample 1: PAIRS                      | The dataset is publicly available                 |
++--------------------------------------+---------------------------------------------------+
+| Sample 2: IPCS                       | The dataset is publicly available                 |
++--------------------------------------+---------------------------------------------------+
+| Sample 3 [@sherman_independent_2015] | The dataset is publicly available                 |
++--------------------------------------+---------------------------------------------------+
+| Sample 4 [@horstmann_unveiling_2021] | The dataset is publicly available                 |
++--------------------------------------+---------------------------------------------------+
+
+<!-- The dataset is publicly available   -->
+
+<!-- The dataset is available through protected access   -->
+
+<!-- The dataset is not publicly available   -->
+
+## Data access (optional)
+
+<!-- If there are any restrictions to accessing the dataset, please describe this here. -->
+
+Although the data are publicly available, the data maintainers request contacting them in order to avoid data overuse or overlap in their use.  
+
+| Dataset         | Availability                                                                                                |
+|-----------------|-------------------------------------------------------------------------------------------------------------|
+| Sample 1: PAIRS | Please contact Simine Vazire, [simine\@gmail.com](mailto:simine@gmail.com){.email}                          |
+| Sample 2: IPCS  | Please contact Emorie Beck, [emorie_beck\@alumni.brown.edu](mailto:emorie_beck@alumni.brown.edu){.email}    |
+| Sample 3        | Please contact Ryne Sherman, [rsherman\@hoganassessments.com](mailto:rsherman@hoganassessments.com){.email} |
+| Sample 4        | Please contact Kai Horstmann, [kai.horstmann\@uni-siegen](mailto:kai.horstmann@uni-siegen){.email}      |
+
+## Data collection procedures
+
+<!-- If the data collection procedure is well documented, provide a link to that information. If the data collection procedure is not well documented, describe, to the best of your ability, how data were collected. Describe the representativeness of the sample and any possible biases stemming from the data collection. -->
+
+### Sample 1: PAIRS
+
+[Adapted from @beck_consistency_2020]
+
+Undergraduate students at Washington University completed experience sampling method (ESM) surveys as part of the longitudinal Personality and Intimate Relationships Study (PAIRS; Vazire, Wilson, Solomon, Bollich, Harris, Weston, Mike, & Jackson, 2015). For Wave 3, 134 (76.7% female) students with a mean age of 19.0 (SD = 1.67) completed ESM surveys. For each wave, participants were paid \$20 for the laboratory portion of each assessment and entered into a lottery with the chance to win \$100 for completing ESM surveys (if all ESM surveys were completed, the odds of winning were 1 in 10). Participants' self-reported ethnicities indicated that 56% identified as Caucasian, 23% as Asian, 9% as Black, and 12% as other. 2% of participants did not report their ethnicities.
+
+Before completing the ESM component, participants first completed a two-hour laboratory experiment in which they completed multiple questionnaires as well as several other tasks, which will not be considered in the current study. After completing the laboratory portion, the researchers provided participants with instructions on the ESM component of the study. Participants received four emails per day with links to the ESM survey for two weeks. Including a practice survey, there were thus 59 possible surveys for each participant.
+
+Participants responded to questions about their situation, emotions, and behavior in the last hour. Nine personality items were taken from the BFI-44 (John, Naumann, & Soto, 2008), but were modified to reflect the collection periods of the ESM survey (e.g. "From 5-6 pm, how engaged were you?"). As noted in Wilson, Thompson, and Vazire (2016), "The shortened BFI scale was comprised of two items per construct taken from the original BFI-44, making sure that each item (a) made sense at the state level; (b) assessed a different facet of the respective Big Five construct; (c) avoided difficult vocabulary words, and (d) had a comparatively high item-total correlation" (p. 4). Participants responded on a 5-point scale from 1 "Not a lot" to 5 "Very." With the exception of Agreeableness items (2), which were only collected if the participant indicated they were interacting with someone in the previous hour, participants responded to all items at each measurement point. In addition, items from the Openness to Experience domain were not included. In this third wave, an ultra brief measure of the DIAMONDS, the S8-I, was included. A few additional state manifestations of personality were also included, measuring participants' state self-esteem, positve emotion, and negative emotion, each of which were measured in the same way as the BFI items.
+
+### Sample 2: IPCS
+
+Participants in this study were drawn from a larger study personality intervention study.
+
+Participants responded to two types of surveys: trait and state (Experience Sampling Method; ESM) measures, for which they were paid separately. For the first wave, which is the only wave used in the present study, participants were recruited from the psychology subject pool at Washington University in St. Louis. Participants were told that the study posted on the recruitment website was the first wave of a longer longitudinal study they would be offered the opportunity to take part in.
+
+Participants were brought into the lab between October 2018 and December 2019, where a research assistant or the first author explained the study procedure to them and walked them through the consent procedure. If they consented, participants were led to a room where they could fill out a form to opt into the ESM portion of the study. They then completed baseline trait measures using the Qualtrics Survey Platform. After, the participants were debriefed, paid \$10 in cash and, if they opted into the ESM portion of the study, the ESM survey procedure was explained to them.
+
+Participants then received ESM measures 4 times a day for a two weeks (max n = 56). The survey platform was built by the first author using the jsPsych library. Additional javascript controllers were written for the purpose of this study and are available on the first author's GitHub. Start times were based on times participants indicated they would like to receive their first survey. Surveys were sent every 4 hours, meaning that the surveys spanned a 12 hour period from the first time participants indicated. Participants received their first survey at their chosen time on the Monday following their in-lab session. They were compensated \$0.50 for each survey completed for a maximum of \$28. To incentivize responding, participants who completed at least 50 surveys received a "bonus" for a total compensation of \$30, which was distributed as an Amazon Gift Card.
+
+Additional information on the full sample was provided in @jackson_using_2021:
+
+> "The second sample consists of 199 (60 male, 154 female) students with a mean age of 19.98 (SD = 1.32). Participants were paid \$10 for the laboratory portion of the study and \$0.50 for each experience sampling survey completed. Participants' self-reported ethnicities indicated that 60 identified as White or European-American, 50 as Asian, 25 as Black, and 28 as other (with the remaining participants declining disclosing their race or ethnicity). The study authors have not published from this dataset. Participants completed pre-ESM question- naires in the lab and were instructed on how to complete the ESM assessments. Participants received four per day for two weeks. There were 56 possible surveys for each participant. No studies have been published using this dataset.
+
+> Participants completed a total of 8,672 ESM surveys in Study 2. Participants who completed fewer than 20 ESM surveys were excluded, yielding final N of 161 participants (39 males, 122 females; $N_{assessments}$ = 8,261). The median number of completed surveys were 47 (range 20--56)" (Jackson, & Beck, 2021, p. 5).
+
+Additional waves of data were completed remotely online but will not be used in the present study. See Beck & Jackson (2021) for an overview of additional data.
+
+### Sample 3: Sherman et al., 2015
+
+From @sherman_independent_2015:
+
+> "Two-hundred eighteen undergraduates at Florida Atlantic University participated in this study for partial course credit.4 Eight participants only completed the first session of the study and therefore their data could not be used here. Personality data (Session 1) for one participant was lost due to a computer error; however, experience sampling data from this participant was used wherever possible. Thus, analyses reported here pertain to 210 (136 female, 73 male, 1 unknown) or 209 participants. The age range for these participants was 18 to 36 years old (M = 18.61, SD = 1.78). The ethnic breakdown for these participants was 18.2% African American, 1.4% Asian, 47.4% Caucasian, 23.0 % Hispanic/Latino, 7.6% Other, and 2.4% did not indicate or were unknown.
+
+> "Participants arrived at the laboratory individually and were greeted by a research assistant. The research assistant explained that the goal of the study was to "understand the situations that you experience in a typical week as well as how you feel, think, and behave in these situations." Participants were informed that the study included two parts. The first part consisted of a brief (approx. 5 min) video-recorded interview5 and a number of personality measures (see Personality Measures) using a computerized testing format. For the second part of the study, participants were sent a text message eight times per day over the course of seven consecutive days containing a personalized link to a survey about their current situation and state expressions (behavior/emotions; see Experience Sampling Measures). Because this study required text messaging capabilities and internet access on a mobile device (i.e., a smart phone), only participants who had such devices were permitted to complete the second part of the study. All participants had such capabilities, but the eight participants who did not complete the second portion of the study indicated they had technical problems.
+
+> "The text-messaging portion of the study began on the day immediately following the first laboratory visit. Although participants could begin the study on any weekday (M-F), the text- messaging schedule was fixed across the seven days of the week for all participants. For example, all participants received text messages at the same time of day on the Monday (Tuesday, Wednesday, etc.) that they were in the study. The text times for each day were randomly generated by choosing eight times between the hours of 9 am and 11 pm. Because we wanted to have at least 1-hr gaps between reports, a new set of times was randomly selected if any times fell within 1-hr of each other. The full text-messaging schedule is available in supplemental materials" (Sherman et al., 2015, p. 17-18).
+
+### Sample 4: Horstmann et al., 2021
+
+From Horstmann et al., 2021:
+
+> "The data were collected using the open-source platform formr.org (Arslan & Tata, 2015). Data collection took part in Germany. Participants were first informed about the study and required to submit their e-mail address to participate. Subsequently, participants received an e-mail with an invitation to respond to demographic questions and complete personality measures (see Trait Measures). After completing the initial assessment, participants received an e-mail every three hours with an invitation to respond to state measures (see below). The measures were presented in the same order each time. After each assessment, participants could opt out by unchecking a box. Either after opting out or after completing 50 measurement occasions, participants were directed to a website with a debriefing and a general invitation to participate in further studies. Participants then received personalized feedback via e- mail on their personality trait levels, and their trajectories in situation perception, affect, and behavior over the course of their participation. If eligible, participants could also receive course credit for their participation.
+
+> In total, N = 1,128 participants clicked on the link to the study, 367 submitted their e-mail, and 341 participants completed the initial personality assessment. Of these, 274 provided sufficient data in the experience sampling phase of the study to be included in further analyses. Participants were on average 24.22 years old (SD = 6.35); 14.96% percent were male, 84.31% were female, and 0.73% did not indicate their gender. Most participants were enrolled in a university program (90.51%). The completion of the initial trait assessment took about 19 minutes to complete (maximum number of 80 items), and each experience sampling assessment on average about three minutes to complete. All materials required to replicate the study as well as a detailed procedure can be found on the OSF" (Horstmann et al., 2021, p. 21-22).
+
+## Codebook
+
+<!-- Some studies offer codebooks to describe their data. If such a codebook is publicly available, link, cite, or upload the document. If not, provide other available documentation. Also provide guidance on what parts of the codebook or other documentation are most relevant. -->
+
+# Variables
+
+<!-- In this section you can describe all variables (both manipulated and measured variables) that will later be used in your confirmatory analysis plan. In your analysis plan, you will have the opportunity to describe how each variable will be used. If you have variables which you are measuring for exploratory analyses, you are not required to list them, though you are permitted to do so. -->
+
+## Measured variables
+
+```{=html}
+<!-- Describe each variable that you will measure. This will include outcome measures, as well as any predictors or covariates that you will measure. You do not need to include any variables that you plan on collecting if they are not going to be included in the confirmatory analyses of this study.
+
+Observational studies and meta-analyses will include only measured variables. As with the previous questions, the answers here must be precise. For example, 'intelligence,' 'accuracy,' 'aggression,' and 'color' are too vague. Acceptable alternatives could be 'IQ as measured by Wechsler Adult Intelligence Scale' 'percent correct,' 'number of threat displays,' and 'percent reflectance at 400 nm.'
+
+Example: The single outcome variable will be the perceived tastiness of the single brownie each participant will eat. We will measure this by asking participants ‘How much did you enjoy eating the brownie’ (on a scale of 1-7, 1 being 'not at all', 7 being 'a great deal') and 'How good did the brownie taste' (on a scale of 1-7, 1 being 'very bad', 7 being 'very good'). -->
+```
+The proposed study will focus on two main categories of measures: Big Five personality states and DIAMONDS situation characteristics. These measures differ slightly across studies, as documented above. Similar to previous work (Kuper et al., 2022), we will average across multiple items for a given state domain for the main analyses and only include measures of the Big Five personality states. For instance, Sherman et al. (2015) originally assessed HEXACO states with two items for Extraversion. Thus, we will average across the two Extraversion items and omit the Honesty-Humility item to ensure comparability across studies. In addition, we will examine Big Five personality traits. Although some samples measured HEXACO rather than Big Five traits, we will treat EXACO as our measure of the Big Five in those studies and drop Honesty-Humility, again for comparability across studies.
+
+## Unit of analysis (optional)
+
+<!-- Which units of analysis (respondents, cases, etc.) will be included or excluded in your study? Taking these inclusion and exclusion criteria into account, indicate the expected sample size of the data you’ll be using for your statistical analyses. If you have a research question about a certain group you may need to exclude participants based on one or more characteristics. Be very specific when describing these characteristics so that readers will be able to redo your moves easily. -->
+
+We will examine associations primarily at the observation level, which will provide participant-level estimates. These participant-level estimates, in turn, will be used to assess similarities and differences across studies.  
+
+## Variable Transformations  
+To render findings comparable across studies and variables, personality states and situation characteristics will be percentage-of-maximum (POMP) scored and divided by 10 such that values of zero represent the smallest possible value and values of 10 represent the maximum possible value. Time normalized change in personality states or situation characteristics will be calculated as the change between two timepoints divided by the number of hours between timepoints. For the univariate change-as-outcome models, we will leave variables uncentered to facilitate the examination of attractor locations. For the bivariate change as outcome models, we will person-mean center levels of personality states and situation characteristics to focus on within-person effects specifically and facilitate the interpretation of simple effects in the presence of the personality state × situation characteristic interaction. In our models, regression coefficients can be interpreted as: how many units of hourly change are observed per unit of the level of a predictor?
+
+## Missing data and Inclusion Criteria (optional)
+
+<!-- What do you know about missing data in the dataset (i.e., overall missingness rate, information about differential dropout)? How will you deal with incomplete or missing data? Provide descriptive information, if available, on the amount of missing data for each variable you will usein the statistical analyses. Based on this information, provide a new expected sample size. -->
+
+Throughout all analyses, we will only include participants with at least 20 valid assessments for each personality state and situation characteristic. For the main analyses, we will include overnight assessments, but supplementary analyses excluding overnight assessments will be conducted. In addition, participants who lack variability on either personality states or situation characteristics will be excluded on a case by case basis.  
+
+# Knowledge of Data
+
+## Prior Publication/Dissemination
+
+<!-- List the publications, working papers, and conference presentations you have worked on that are based on the dataset you will use. For each work, list the variables you analyzed, but limit yourself to variables that are relevant to the proposed analysis. If the dataset is longitudinal, also state which wave of the dataset you analyzed. Specify the previous works for each co-author separately. -->
+
+**Sample 1: PAIRS:** (note this study uses Wave 3, not Wave 1)\
+@beck_consistency_2020, *JPSP*; Beck, Jackson\
+- Waves 1-3, nine indicators of the Big Five\
+@jackson_using_2021, *JoP*; Beck, Jackson\
+- Wave 1, nine indicators of the Big Five
+
+**Sample 2: IPCS:**\
+@beck_idiographic_2021, *EJP*; Beck, Jackson\
+- Wave 1; 15 facets of the Big Five from 25% of the sample\
+@beck_personalized_2021, *Psych Science*; Beck, Jackson\
+- Wave 1: 15 facets of the Big Five and DIAMONDS indicators\
+@jackson_using_2021, 2021, *JoP*; Beck, Jackson\
+- Wave 1: 15 facets of the Big Five
+
+**Sample 3: Sherman et al., 2015:**\
+Horstmann et al., 2021, *JPSP*; Horstmann\
+@horstmann2021distinguishing, *EJP*, Horstmann
+Kuper et al., 2022 (under revision); Kuper
+@rauthmann2019self, *SPPS*, Horstmann
+
+**Sample 4: Horstmann et al., 2021:**\
+Horstmann et al., 2021, *JPSP*; Horstmann\
+Kuper et al., 2022 (under revision); Kuper
+@horstmann2021distinguishing, *EJP*, Horstmann
+
+## Prior knowledge
+
+<!-- Disclose any prior knowledge you may have about the dataset that is relevant for the proposed analysis. If you do not have any prior knowledge of it, please state so. Your prior knowledge could stem from working with the data first-hand, from reading previously published research, or from codebooks. Provide prior knowledge for every author separately. -->
+
+To date, no one, to our knowledge has examined Big Five personality state-DIAMONDS situation characteristics in PAIRS or IPCS. However, the first and last author have examined (1) idiographic Big Five personality structure in PAIRS and IPCS and (2) the predictive power of personality states and DIAMONDS characteristics in predicting momentary outcomes (e.g., procrastination, loneliness). In the other studies, previous investigation have examined mean-level and individual differences in personality state-situation characteristic contingencies / associations. The second author conducted one such study using these studies but has not worked with PAIRS or IPCS previously. Although the models conducted in these studies are substantively different from those used in the present study, we will use these associations to provide strong priors on the effects.  
+
+# Analysis Plan
+
+```{=html}
+<!-- You may describe one or more confirmatory analysis in this preregistration. Please remember that all analyses specified below must be reported in the final article, and any additional analyses must be noted as exploratory or hypothesis generating.
+
+A confirmatory analysis plan must state up front which variables are predictors (independent) and which are the outcomes (dependent), otherwise it is an exploratory analysis. You are allowed to describe any exploratory work here, but a clear confirmatory analysis is required. -->
+```
+## Statistical models
+
+```{=html}
+<!-- What statistical model will you use to test each hypothesis? Please include the type of model (e.g. ANOVA, multiple regression, SEM, etc) and the specification of the model (this includes each variable that will be included as predictors, outcomes, or covariates). Please specify any interactions, subgroup analyses, pairwise or complex contrasts, or follow-up tests from omnibus tests. If you plan on using any positive controls, negative controls, or manipulation checks you may mention that here. Remember that any test not included here must be noted as an exploratory test in your final article.
+
+This is perhaps the most important and most complicated question within the preregistration. As with all of the other questions, the key is to provide a specific recipe for analyzing the collected data. Ask yourself: is enough detail provided to run the same analysis again with the information provided by the user? Be aware for instances where the statistical models appear specific, but actually leave openings for the precise test. See the following examples:
+
+- If someone specifies a 2x3 ANOVA with both factors within subjects, there is still flexibility with the various types of ANOVAs that could be run. Either a repeated measures ANOVA (RMANOVA) or a multivariate ANOVA (MANOVA) could be used for that design, which are two different tests. 
+- If you are going to perform a sequential analysis and check after 50, 100, and 150 samples, you must also specify the p-values you’ll test against at those three points.
+
+Example:  We will use a one-way between subjects ANOVA to analyze our results. The manipulated, categorical independent variable is 'sugar' whereas the dependent variable is our taste index. -->
+```
+
+All statistical analyses are estimated as Bayesian models using the R package brms (Bürkner, 2018) with default priors. We will use two related models to test the non-linear dynamics between personality states and situation characteristics. First, we will estimate a series of idiographic and multilevel univariate change as outcome models of personality states and situation characteristics separately as a direct replication and extension of Danvers et al. (2020). Second, we will estimate bivariate idiographic and multilevel bivariate change as outcomes models of personality states and situation characteristics.
+
+### Univariate Models (RQ1)
+
+#### Idiographic  
+These idiographic models will replicate the procedure used in Danvers et al. (2020) in which they estimated a series of change as outcome models predicting changes in personality states (5) from levels of personality states. In addition, we will extend this by predicting changes in situation characteristics (8) from levels in situation characteristics. 
+
+First, the number of equilibria for the univariate personality state and situation characteristic change as outcome models are determined separately. We will first fit a loess model separately for each individual who has data for at least 40 measurement occasions, examining the relationship between its level (0 to 10) and (time normalized) change. Code will be similar to the data from IPCS using indicators not examined in the present study. Example data below:
+
+
+```{r, eval = T}
+load("/Volumes/GoogleDrive/My Drive/ps-oscillators/03-data/02-ipcs/01-raw-data/esm_cleaned_combined_2021-04-07.RData")
+emo <- emo %>% mutate(Date = as.character(Date)
+                       , Date = ifelse(SID == 212, str_replace_all(Date, "2019-01", "2020-01"), Date)
+                       , Date = as.Date(Date)) %>%
+  group_by(SID) %>%
+  mutate(StartDate = min(Date)) %>%
+  ungroup()
+missing_fun <- function(d){
+  first_day <- min(d$Date) # get first day
+  hourBlock <- unique(d$`Hour Block 1`) # get first hour block
+  max_day <- max(d$Day); max_day <- ifelse(max_day < 14, 14, max_day) # get number of days
+  d2 <- d %>% #mutate(StartDate = ifelse(is.na(StartDate), min(Date, na.), StartDate))
+    full_join(crossing(
+      Day = seq(0,max_day,1),
+      HourBlock = 1:4,
+      StartDate = first_day,
+      `Hour Block 1` = hourBlock)) %>% # cross existing data with "perfect" data
+    arrange(Day, HourBlock) %>%
+    mutate(Date = StartDate + Day,
+           Hour = ifelse(is.na(Hour), `Hour Block 1` + (HourBlock-1)*4, Hour),
+           Minute = ifelse(is.na(Minute), "00", Minute))
+  d2$Date[d2$Hour > 23] <- d2$Date[d2$Hour > 23] + 1 # some day blocks span days
+  d2$Hour[d2$Hour > 23] <- d2$Hour[d2$Hour > 23] - 24 # some day blocks span days
+  d2 <- d2 %>% mutate(
+    Full_Date = sprintf("%s %s:%s", as.character(Date), Hour, Minute)) %>%
+    select(-`Hour Block 1`, -StartDate) 
+}
+
+# create a data frame of timing info 
+ipcs_times <- emo %>% 
+  select(SID, StartDate, Date, Hour, Minute, Day, `Hour Block 1`, HourBlock) %>%
+  distinct() %>%
+  mutate(Minute = str_remove_all(Minute, ".csv"),
+         Minute = ifelse(as.numeric(Minute) < 10, sprintf("0%s", Minute), Minute)) %>%
+  arrange(SID, Date) %>%
+  group_by(SID) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate(data = map(data, missing_fun)) %>%
+  unnest(data) %>%
+  arrange(SID, Date, Hour) %>%
+  group_by(SID) %>%
+  mutate(all_beeps = seq(1, n(), 1)) %>%
+  ungroup()
+
+emo <- emo %>% 
+  select(SID, trait, responses2, Date, Hour, Minute, Day, HourBlock) %>%
+  mutate(Minute = str_remove_all(Minute, ".csv")
+         , responses2 = as.numeric(responses2)) %>%
+  filter(trait %in% c("happy", "purposeful")) %>%
+  full_join(ipcs_times) %>%
+  distinct() %>%
+  arrange(SID, all_beeps, trait)
+
+pomp <- function(x) (x - min(x, na.rm = T))/(max(x, na.rm = T) - min(x, na.rm = T))*10
+
+emo_ct <- emo %>%
+  filter(!is.na(trait)) %>%
+  group_by(SID, trait) %>%
+  mutate(responses2 = pomp(responses2)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = "trait", values_from = "responses2") %>%
+  mutate(Full_Date = ifelse(is.na(Full_Date), sprintf("%s %s:%s", as.character(Date), Hour, Minute), Full_Date)) %>%
+  group_by(SID) %>%
+  arrange(SID, Date, Hour, Minute) %>%
+  mutate(tdif = as.numeric(difftime(ymd_hm(Full_Date), lag(ymd_hm(Full_Date)), units = "hours"))) %>%
+  filter(is.na(tdif) | tdif > 1) %>%
+  mutate_at(vars(happy, purposeful), lst(delta = ~((.) - lag(.))/tdif))
+
+nested_emo_ct <- emo_ct %>% 
+  group_by(SID) %>%
+  nest() %>%
+  filter(map_dbl(data, nrow) > 25) %>%
+  ungroup()
+
+mh <- loess(happy_delta ~ happy, data = nested_emo_ct$data[[1]]); mh # estimate loess model 
+mp <- loess(purposeful_delta ~ purposeful, data = nested_emo_ct$data[[1]]);mp # estimate loess model 
+```
+
+Based on the model, we will determine the order of the relationship based on the number of times the loess line crosses the X-axis (i.e., the sign of the relationship between level and change changes). Thus, if the line crosses once, it would be a first order (linear) relationship. If twice, a second-order quadratic relationship. Given that one-attractor topologies were found to be most common (Danvers et al., 2020), we will focus on linear associations between level and change for subsequent analyses.  
+
+```{r, eval=T}
+round_p1_down <- function(x){
+  # if(n)
+    x <- round(x, 2)
+    sp_x <- str_split(x, pattern = "[.]")[[1]]
+  if(length(sp_x) > 1){
+    if(sign(x) == -1) sp_x[2] <- round_any(as.numeric(sp_x[2]), 10, ceiling)
+    sp_x[2] <- str_sub(sp_x[2], 1, 1)
+    y <- as.numeric(paste(sp_x[1], sp_x[2], sep = "."))
+  } else x
+}
+
+min_h <- round_p1_down(min(nested_emo_ct$data[[1]]$happy, na.rm = T)); min_p <- round_p1_down(min(nested_emo_ct$data[[1]]$purposeful, na.rm = T))
+max_h <- round_p1_down(max(nested_emo_ct$data[[1]]$happy, na.rm = T)); max_p <- round_p1_down(max(nested_emo_ct$data[[1]]$purposeful, na.rm = T))
+
+ph <- predict(mh, newdata = tibble(happy = seq(min_h, max_h, .2))) # get loess predictions
+pp <- predict(mp, newdata = tibble(purposeful = seq(min_p, max_p, .2))) # get loess predictions
+
+(num_equil_h <- sum(sign(ph) != sign(lag(ph)), na.rm = T))# count sign changes = number of equilibria
+(num_equil_p <- sum(sign(pp) != sign(lag(pp)), na.rm = T))# count sign changes = number of equilibria
+```
+
+The basic model for personality states and situation characteristics is as follows: 
+$\Delta~P_{it} = b_{0i} + b_{1i}*P_{it} + \epsilon_{it,p}$  
+$\Delta~S_{it} = b_{0i} + b_{1i}*S_{it} + \epsilon_{it,p}$
+, where $i$ indicates individual $i$, $t$ indicates observation $t$ for individual $i$. $b_1$  indicates the main effects for each personality state or situation characteristic. $\Delta P$ is the first derivative (i.e. velocity) of the personality state indicator, $\Delta S$ is the first derivative of the situation characteristic indicator, $P_{it}$ is the level of the personality state at time $t$, $S_{it}$ is the level of the situation characteristic at time $t$. $b_1$ is the strength of the equilibria point for the personality state or situation characteristic.The location of the equilibria point can be found by setting change to 0 and solving for $P_{it} / S_{it}$, that is, $P_{it} / S_{it}$ = $-\frac{b_{0i}{b_{1i}}}$. 
+
+In rare cases, extreme values for equilibria points may be estimated (particularly in idiographic models). For any given analysis, we will exclude participants with equilibria points estimated outside the scale bounds.  
+
+```{r}
+rhs_h <- "happy"; rhs_p <- "purposeful"
+if(num_equil_h > 1) rhs_h <- c("happy", "happy_2")
+if(num_equil_p > 1) rhs_h <- c("purposeful", "purposeful_2")
+rhs_h <- paste0(paste(rhs_h, rhs_p, sep = " * "), collapse = " + ")
+rhs_p <- paste0(paste(rhs_h, rhs_p, sep = " * "), collapse = " + ")
+
+fh <- paste(c("happy_delta", rhs_h), collapse = " ~ ")
+fp <- paste(c("purposeful_delta", rhs_p), collapse = " ~ ")
+
+# not run to speed knitting -- loaded from previous run
+mh1 <- brm(fh
+           , data = nested_emo_ct$data[[1]]
+           , iter = 1000
+           , warmup = 500
+           , cores = 4
+           )
+mp1 <- update(mh1
+              , formula = fp
+              , newdata = nested_emo_ct$data[[1]]
+              , cores = 4)
+# save(mh1, mp1, file = "/Volumes/GoogleDrive/My Drive/ps-oscillators/01-prereg/sample_idio_univar.RData")
+load("/Volumes/GoogleDrive/My Drive/ps-oscillators/01-prereg/sample_idio_univar.RData")
+
+fxh <- fixef(mh1); fxh
+fxp <- fixef(mp1); fxp
+```
+
+
+#### Multilevel  
+Multilevel models have become standard in psychology and beyond for nested data that violate assumptions of independence of errors in standard linear regression. Using maximum likelihood estimation, such models pull apart variance at different levels – in our case observations and persons – that allow us to understand associations without violating assumptions. In our case, this means that we can look at average associations between personality states and situation characteristics across people as well as person-specific associations. However, these average associations are not the same as simply averaging the idiographic estimates already discussed. Rather, a hallmark of multilevel models is shrinkage, in which more extreme observations are shrunk toward the mean. Doing so can improve the reliability of the estimates, assuming that extreme examples actually reflect more error. A pure idiographic framework requires no reference to other people, so we choose to test an MLM approach in addition to an idiographic approach to understand the degree of shrinkage that emerges from these estimates and to get an estimate of the average association across people.  
+
+Level 1: $\Delta P_{it} = \beta_{0i} + \beta_{1i} * P_{it} + \epsilon_{it}$
+Level 2: 
+$\beta_{0i} = \gamma_{00} + u_{0i}$  
+$\beta_{1i} = \gamma_{10} + u_{1i}$  
+
+, where $i$ indicates individual $i$, $t$ indicates observation $t$ for individual $i$. $\Delta P$ is the time normalized change in the level of the personality state indicator (similar to a first derivative [i.e. velocity]), $\Delta S$ is the time normalized change in the level of the situation characteristic indicator, $P_{it}$ is the level of the personality state at time $t$, $S_{it}$ is the level of the situation characteristic at time $t$. $\gamma_{10}$ is the strength of the equilibria point for the personality state or situation characteristic. The location of the equilibria point can be found by setting change to 0 and solving for $P_{it}$ / $S_{it}$, that is, $P_{it} / S_{it}$ = $-\frac{\gamma_{00}{\gamma_{10}}}$ for the average attractor location and $P_{it} / S_{it}$ = $-\frac{\beta_{0i}{\beta_{1i}}}$ for the individual-specific attractor locations.  
+
+The code will be similiar to the following:  
+```{r}
+ #generate model formula based on loess equilibria 
+
+fh <- bf(happy_delta ~ 1 + happy + (1 + happy | p | SID))
+fp <- bf(purposeful_delta ~ 1 + purposeful + (1 + purposeful | p | SID))
+
+# not run to speed knitting -- loaded from previous run
+# mh2 <- brm(fh
+#            , data = emo_ct
+#            , iter = 1000
+#            , warmup = 500
+#            , cores = 4
+#            )
+# mp2 <- update(mh2
+#               , formula = fp
+#               , newdata = emo_ct
+#               , cores = 4)
+# save(mh2, mp2, file = "/Volumes/GoogleDrive/My Drive/ps-oscillators/01-prereg/sample_mlm_univar.RData")
+load("/Volumes/GoogleDrive/My Drive/ps-oscillators/01-prereg/sample_mlm_univar.RData")
+
+fxh <- fixef(mh2); fxh
+fxp <- fixef(mp2); fxp
+
+rfh <- coef(mh2, probs = c(0.025, 0.975))[[1]] %>% array_tree(3) %>% 
+      tibble(term = names(.), data = .) %>% 
+      mutate(data = map(data, ~(.) %>% data.frame %>% 
+        rownames_to_column("SID"))) %>% 
+      unnest(data) %>% 
+      select(term, SID, estimate = Estimate, conf.low = Q2.5, conf.high = Q97.5); rfh
+
+rfp <- coef(mp2, probs = c(0.025, 0.975))[[1]] %>% array_tree(3) %>% 
+      tibble(term = names(.), data = .) %>% 
+      mutate(data = map(data, ~(.) %>% data.frame %>% 
+        rownames_to_column("SID"))) %>% 
+      unnest(data) %>% 
+      select(term, SID, estimate = Estimate, conf.low = Q2.5, conf.high = Q97.5); rfp
+```
+
+##### Estimating Shrinkage 
+To estimate the degree of shrinkage, we will visualize the difference in the individual-specific estimates of attractor strength and location in the idiographic and MLM models. We will also estimate the percent difference between the two and the shrinkage factor.  
+
+### Bivariate Models (RQ2)  
+
+One main goal of the present study is to investigate whether situation characteristics and personality states are bidirectionally associated with changes in each. Thus, in our second set of analyses, we will estimate a series of bivariate models with both changes in personality states (5) and changes in situation characteristics (8), yielding 40 models in total.
+
+In order to estimate their interplay, we will add main effects of levels of situation characteristics and the interaction between levels of situation characteristics and personality states to the piece estimating changes in personality states and will add levels of personality states and the interaction between levels of personality states and situation characteristics to the piece estimating changes in situation characteristics.
+
+#### Idiographic  
+
+$\Delta~Personality_{it} = b_{0i,p} + b_{1i,p}*Personality_{it} + b_{2i,p}*Situation_{it} + b_{3i,p}*Personality_{it,p}*Situation_{it,p} + \epsilon_{it,p}$
+$\Delta~Situation_{it} = b_{0i,s} + b_{1i,s}*Personality_{it} + b_{2i,s}*Situation_{it} + b_{3i,s}*Personality_{it}*Situation_{it} + \epsilon_{it,s}$  
+
+, where $i$ indicates individual $i$, $t$ indicates observation $t$ for individual $i$. $\Delta P$ is the time normalized change in the level of the personality state indicator (similar to a first derivative [i.e. velocity]), $\Delta S$ is the time normalized change in the level of the situation characteristic indicator, $P_{it}$ is the level of the personality state at time $t$, Sit is the level of the situation characteristic at time $t$. $b_{1i,P}$ is the strength of the equilibria point for the personality state, adjusting for the situation characteristic, at a level of zero for the situation characteristic (given the interaction term). $b_{1i,S}$  is the strength of the equilibria point for the situation characteristic, adjusting for the personality state, at a level of zero for the personality state. The main effect of the respective other variable ($b_{2i,P}$, $b_{2i,S}$) can alter the location of the equilibria points. Thus, for instance, the level of the personality state at which no change is expected may differ by the situation characteristic level. Moreover, including an interaction ($b_{3i,P}$ and $b_{3i,S}$) can move equilibria points, govern their presence, and/or moderate their strength. To find the equilibria points, we simply solve the equations when $\Delta P$ and $\Delta S$ are equal to zero, we set each equation to zero and solve for $P$ or $S$.  
+
+```{r, eval = T}
+fh <- bf(happy_delta ~ happy)
+fp <- bf(purposeful_delta ~ purposeful)
+f2 <- mvbrmsformula(bf(fp), bf(fh)); f2
+
+m1 <- brm(f2
+         , data = nested_emo_ct$data[[1]]
+         , iter = 1000
+         , warmup = 500
+         , cores = 4
+         )
+# save(m, file = "/Volumes/GoogleDrive/My Drive/ps-oscillators/01-prereg/sample_idio_mod.RData")
+load("/Volumes/GoogleDrive/My Drive/ps-oscillators/01-prereg/sample_idio_mod.RData")
+p <- predict(m, newdata = crossing(happy = seq(min_h,max_h,.2), purposeful = seq(min_p,max_p,.2)))
+p4 <- apply(p, 3, function(x) bind_cols(data.frame(x), crossing(happy = seq(min_h,max_h,.2), purposeful = seq(min_p,max_p,.2))))
+p4 <- ldply(p4)
+
+broom.mixed::tidy(m)
+
+m_h <- mean(nested_emo_ct$data[[1]]$happy, na.rm = T)
+m_p <- mean(nested_emo_ct$data[[1]]$purposeful, na.rm = T)
+
+# p4 %>%
+#   select(.id, Estimate, happy, purposeful) %>%
+#   mutate(happy = happy #+ m_h
+#          , purposeful = purposeful) %>% #+ m_p) %>%
+#   pivot_wider(names_from = ".id", values_from = "Estimate") %>%
+#   mutate(col = sqrt(happydelta^2 + purposefuldelta^2)) %>%
+#   ggplot(aes(x = happy, y = purposeful, u = happydelta, v = purposefuldelta)) + 
+#     geom_quiver(aes(color = col))   +
+#     geom_hline(aes(yintercept = m_h)) + 
+#     geom_vline(aes(xintercept = m_p)) + 
+#     scale_color_gradient(low = "gray80", high = "black") +
+#     labs(x = "Purpose Level", y = "Happy Level", title = "") +
+#     theme_classic() +
+#     theme(legend.position = "none",
+#           strip.background = element_rect(fill = "black"),
+#           strip.text = element_text(face = "bold", color = "white", size = rel(1.2)),
+#           axis.text = element_text(face = "bold", color = "black"),
+#           axis.title = element_text(face = "bold", size = rel(1.1)),
+#           plot.title = element_text(face = "bold", hjust = .5))
+```
+
+#### Multilevel  
+ In addition, we will estimate a multilevel version of these models. The formula is as follows:  
+ 
+Level 1:\
+$\Delta~Personality_{it} = \beta_{0i,p} + \beta_{1i,p}*Personality_{it} + \beta_{2i,p}*Situation_{it} + \beta_{3ip}*Personality_{it,p}*Situation_{it,p} + \epsilon_{it,p}$\
+$\Delta~Situation_{it} = \beta_{0i,s} + \beta_{1i,s}*Personality_{it} + \beta_{2i,s}*Situation_{it} + \beta_{3i,s}*Personality_{it}*Situation_{it} + \epsilon_{it,s}$
+
+Level 2:\
+$\beta_{0i,p} = \gamma_{00,p} + u_{0i,p}$\
+$\beta_{1i,p} = \gamma_{10,p} + u_{1i,p}$\
+$\beta_{2i,p} = \gamma_{20,p} + u_{2i,p}$\
+$\beta_{3i,p} = \gamma_{30,p} + u_{3i,p}$
+
+$\beta_{0i,s} = \gamma_{00,s} + u_{0i,s}$\
+$\beta_{1i,s} = \gamma_{10,s} + u_{1i,s}$\
+$\beta_{2i,s} = \gamma_{20,s} + u_{2i,s}$\
+$\beta_{3i,s} = \gamma_{30,s} + u_{3i,s}$,
+
+, where $i$ indicates individual $i$, $t$ indicates observation $t$ for individual $i$. $\Delta P$ is the time normalized change in the level of the personality state indicator (similar to a first derivative [i.e. velocity]), $\Delta S$ is the time normalized change in the level of the situation characteristic indicator, $P_{it}$ is the level of the personality state at time $t$, $S_{it}$ is the level of the situation characteristic at time $t$.
+
+For fixed effects, $\gamma_{1i,P}$ is the strength of the equilibria point for the personality state, adjusting for the situation characteristic, at a level of zero for the situation characteristic (given the interaction term). $\gamma_{1i,S}$ is the strength of the equilibria point for the situation characteristic, adjusting for the personality state, at a level of zero for the personality state. The main effect of the respective other variable ($\gamma_{20,P}$, $\gamma_{20,S}$) can alter the location of the equilibria points. Thus, for instance, the level of the personality state at which no change is expected may differ by the situation characteristic level. Moreover, including an interaction ($\gamma_{30,P}$ and $\gamma_{30,S}$) can move equilibria points, govern their presence, and/or change their strength. Thus,  3i,S capture the displacement of the equilibria points. For individual-specific effects, the relevant, analogous terms are $\beta_{1i,P}$, $\beta_{3i,P}$, $\beta_{1i,S}$, and $\beta_{3i,S}$.  
+
+To find the equilibria points, we simply solve the equations when $\Delta P$ and $\Delta S$ are equal to zero, we set each equation to zero and solve for $P$ or $S$.  
+
+The basic code is below.
+
+```{r, eval = T}
+fp <- paste(c("happy_delta", "happy*purposeful + (happy*purposeful | SID)"), collapse = " ~ ")
+fs <- paste(c("purposeful_delta", "happy*purposeful + (happy*purposeful | SID)"), collapse = " ~ ")
+f2 <- mvbrmsformula(bf(fp), bf(fs))
+
+m2 <- brm(f2
+          , data = emo_ct
+          , iter = 1000
+          , warmup = 500
+          , cores = 4
+          )
+# save(m2, file = "/Volumes/GoogleDrive/My Drive/ps-oscillators/01-prereg/sample_mlm_bivar.RData")
+load("/Volumes/GoogleDrive/My Drive/ps-oscillators/01-prereg/sample_mlm_bivar.RData")
+
+fx <- fixef(m2); fx 
+
+rf <- coef(m2, probs = c(0.025, 0.975))[[1]] %>% array_tree(3) %>% 
+      tibble(term = names(.), data = .) %>% 
+      mutate(data = map(data, ~(.) %>% data.frame %>% 
+        rownames_to_column("SID"))) %>% 
+      unnest(data) %>% 
+      select(term, SID, estimate = Estimate, conf.low = Q2.5, conf.high = Q97.5); rf
+```
+
+
+### Associations Among Individual Differences (RQ3):
+Based on the univariate models, we will examine the correlation between the attractor strengths for situation characteristics and personality states, respectively. This will be computed as a latent, model-based correlation in the multilevel context and as a correlation corrected for attenuation using idiographic estimates. In addition, we will examine correlations between attractor location and attractor strength both for the same dependent variable and across personality state - situation characteristic combinations. Because attractor location cannot be estimated as a latent variable in the present modeling approach, correlations will be computed using extracted random effects (and mathematical manipulations thereof) in the multilevel context and using N = 1 estimates for the idiographic analyses. Reliabilities of person means in experience sampling data (very similar to attractor location) are typically relatively high with the present number of assessments per person (40 or larger). Moreover, the reliability of attractor locations based on extracted random effects is not straightforward to calculate. Therefore, we will only correct correlations between attractor strength and location for attenuation with respect to attractor strength (using both extracted random effects and idiographic estimates).  In addition, we will examine curvilinear associations by predicting attractor strength from $location$ and $location^2$ using extracted random effects (multilevel) and person-specific estimates (idiographic). Finally, correlations between attractor location for personality states and situation characteristics will be computed using extracted random effects (again transformed to attractor location estimates) and idiographic estimates, without correcting for attenuation.  
+
+Based on the bivariate models, we will compute correlations between individual differences in the following within-person associations: (1) personality state level --> personality state change, (2) personality state level --> situation characteristic change, (3) situation characteristic level --> personality state change, and (4) situation characteristic level --> situation characteristic change. This will yield six correlations in total for each personality state - situation characteristic combination. Associations will be computed as latent model-based correlations in multilevel models and as correlations between idiographic estimates corrected for attenuation.  
+
+Lastly, we will examine associations with the Big Five personality traits. For attractor strength, we will examine cross-level interactions using multilevel models and correlations corrected for attenuation for idiographic estimates. In addition, we will examine curvilinear associations  with attractor strength by including cross-level interactions with $trait$ and $trait^2$ (multilevel) and using linear regressions with person-specific estimates (idiographic). For attractor location, we will examine correlations with extracted random effects (transformed to estimates of attractor location) or idiographic estimates, without correction for attenuation. Lastly, for individual differences in dynamics between situation characteristics and personality states (RQ2), we will examine cross-level interactions (multilevel) and correlations corrected for attenuation (idiographic).  
+
+<!-- ## Effect size (optional)   -->
+
+<!-- If applicable, specify a predicted effect size or a minimum effect size of interest for all the effectstested in your statistical analyses. -->
+
+<!-- Enter your response here. -->
+
+## Statistical power (optional)
+
+<!-- Present the statistical power available to detect the predicted effect size or the smallest effect size of interest. Use the sample size after updating for missing data and outliers. -->
+
+Power guidelines for non-linear dynamic systems models like the coupled oscillator are not well established and depend on a variety of factors. However, estimates range from 50-100 observations. We will perform a number of sensitivity analyses examining the robustness of these relationships, such using strongly regularizing priors and correlating effect sizes with sample sizes.
+
+## Inference criteria (optional)
+
+```{=html}
+<!-- What criteria will you use to make inferences? Please describe the information youÍll use (e.g. p-values, bayes factors, specific model fit indices), as well as cut-off criterion, where appropriate. Will you be using one or two tailed tests for each of your analyses? If you are comparing multiple conditions or testing multiple hypotheses, will you account for this?
+
+p-values, confidence intervals, and effect sizes are standard means for making an inference, and any level is acceptable, though some criteria must be specified in this or previous fields. Bayesian analyses should specify a Bayes factor or a credible interval. If you are selecting models, then how will you determine the relative quality of each? In regards to multiple comparisons, this is a question with few "wrong" answers. In other words, transparency is more important than any specific method of controlling the false discovery rate or false error rate. One may state an intention to report all tests conducted or one may conduct a specific correction procedure; either strategy is acceptable.
+
+Example: We will use the standard p<.05 criteria for determining if the ANOVA and the post hoc test suggest that the results are significantly different from those expected if the null hypothesis were correct. The post-hoc Tukey-Kramer test adjusts for multiple comparisons. -->
+```
+
+Inference criteria will be based on the 95% Credible interval of the model terms at the participant or study level.
+
+In this study, we will not adjust for multiple testing. Multiple testing is a tricky issue for (at least) two reasons: First, it only exists because of null hypothesis significance testing. If one focuses on an estimation of the effect, then multiple testing is not an issue because multiple testing only concerns rejecting nulls when unduly justified. If a null is not of concern but the precision of the estimate is more explicitly a concern, then broader CIs can be created.
+
+Second, within a Bayesian modeling framework (as well as certain frequentists perspectives that are more of the estimation bent compared to the hypothesis testing bent) adjustment for tests do not make any sense insomuch as the posterior distribution is the logical consequence of the likelihood and the priors. Adjusting the posterior distribution in any way is thus manipulating your model results based on factors that were not modeled. As a result, the model is not generative, a feature that is seen as major benefit. At a simpler level, p-values are not a part of Bayesian framework as there is no null hypothesis distribution.
+
+Gelman, A., Hill, J., & Yajima, M. (2012). Why we (usually) don't have to worry about multiple comparisons. Journal of Research on Educational Effectiveness, 5(2), 189-211.  
+
+## Integration across studies
+We will integrate parameters of interest across studies by performing a meta-analysis. Given the small number of studies (k = 4), we will use fixed-effects meta-analysis rather than estimating the heterogeneity across studies. Nevertheless, we will gauge the extent to which findings are similar across studies and report individual study results in addition to meta-analytic results.
+
+
+
+## Assumption Violation/ Model Non-Convergence (optional)
+
+<!-- What will you do should your data violate assumptions, your model not converge, or some otheranalytic problem arises?   -->
+
+If our models fail to converge, we will increase the number of warm-up samples and total samples by 1.5x, increase adapt_delta to .99, and increase the number of trees to 20.
+
+## Reliability and Robustness testing (optional)
+
+<!-- Provide a series of decisions or tests about evaluating the strength, reliability, or robustness of your finding. This may include within-study replication attempts, additional covariates, cross-validation, applying weights, selectively applying constraints in an SEM context (e.g., comparingmodel fit statistics), overfitting adjustment techniques used, or some other simulation/sampling/bootstrapping method. -->
+
+We are using four samples in order to better understand the robustness of our findings, and coupling idiographic and multilevle approaches to better estimate the reliability of our models.
+
+## Exploratory analyses (optional)
+
+```{=html}
+<!-- If you plan to explore your data set to look for unexpected differences or relationships, you may describe those tests here. An exploratory test is any test where a prediction is not made up front, or there are multiple possible tests that you are going to use. A statistically significant finding in an exploratory test is a great way to form a new confirmatory hypothesis, which could be registered at a later time.
+
+Example: We expect that certain demographic traits may be related to taste preferences. Therefore, we will look for relationships between demographic variables (age, gender, income, and marital status) and the primary outcome measures of taste preferences. -->
+```
+We will also test whether equilibria location and strength are associated with interindividual differences in levels of personality characteristics measured via nomothetic inventories. These are documented in the codebook in this preregistration.
+
+# Other
+
+<!-- ## Other (Optional) -->
+
+<!-- If there is any additional information that you feel needs to be included in your preregistration, please enter it here. Literature cited, disclosures of any related work such as replications or work that uses the same data, or other context that will be helpful for future readers would be appropriate here. -->
+
+<!-- Enter your response here. -->
+
+# References
+
+## 
+
+```{=tex}
+\vspace{-2pc}
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{-1in}
+\setlength{\parskip}{8pt}
+```
+\noindent

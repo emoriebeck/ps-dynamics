@@ -1,0 +1,344 @@
+--- 
+title           : "Person and Situation as Coupled Systems"
+shorttitle      : "Person and Situation as Coupled Systems"
+author: 
+  - name        : "Emorie D Beck"
+    affiliation : "University of California, Davis"
+  - name        : "Niclas Kuper"
+    affiliation : "Universität Bielefeld"
+  - name        : "Kai T Horstmann"
+    affiliation : "Humboldt-Universität zu Berlin"
+  - name        : "Joshua J Jackson"
+    affiliation : "Washington University in St. Louis"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+bibliography: [book.bib, packages.bib]
+# url: your book url like https://bookdown.org/yihui/bookdown
+# cover-image: path to the social sharing image like images/cover.jpg
+description: |
+  There is ample evidence that situation characteristics and people’s momentary states are meaningfully related (e.g., Horstmann et al., 2021; Sherman et al., 2015). Moreover, there are sizable individual differences in these contingencies (Kuper et al., 2022). However, this work leaves open several questions on the transactions (Rauthmann, 2021) between situation characteristics and personality states over time. Most studies focus on concurrent within-person associations rather than explicitly examining changes over time (but see Rauthmann et al., 2016; Hecht et al., 2022). Moreover, previous work used classical linear models rather than dynamic system models that may better reflect the nature of the processes at hand. In the present project, we aim to investigate non-linear dynamics between changes in personality states and situation characteristics using both person-specific and multilevel change-as-outcome models (Butner et al., 2015; Danvers et al., 2020). Specifically, we will predict subsequent changes in both personality states and situation characteristics by each other and their interaction. In addition to examining average effects across participants, we will focus on individual differences in these relations as well as the associations of these individual differences among each other.
+link-citations: yes
+github-repo: rstudio/bookdown-demo
+editor_options: 
+  chunk_output_type: console
+---
+
+# Workspace  
+
+## Packages  
+```{r}
+library(knitr)
+library(lubridate)
+library(rstan)
+library(Amelia)
+library(plyr)
+library(tidyverse)
+library(psych)
+library(kableExtra)
+library(ggridges)
+library(brms)
+library(ggquiver)
+library(furrr)
+```
+
+## Working Directory  
+```{r}
+wd <- "/Volumes/Emorie/other projects/ps-oscillators"
+```
+
+
+## Codebooks  
+
+### Sample 1: Personality and Interpersonal Roles Study (PAIRS)
+
+The PAIRS study was a seven wave longitudinal study collected at Washington University in St. Louis. Approximately 350 individuals completed at least one wave of survey data, experience sampling method data, and electronically activated recorder data. In the proposed study, we will be using the third wave of ESM data, which corresponds to the seventh wave of survey data. Although all waves collected a variety of data on personality, emotions, situations, and more, the third wave additionally included a measure of situation characteristics, the DIAMONDS. In the proposed study, we will make use of 9 indicators of Big Five personality (representing each of the Big Five except Openness) and 8 indicators of situations, which were included in wave 3.  
+
+```{r pairs codebook}
+pairs_codebook <- sprintf("%s/03-data/00-codebooks/codebook-2022-06-07.xlsx", wd) %>%
+  readxl::read_xlsx(., sheet = "PAIRS"); pairs_codebook
+```
+
+
+### Sample 2: Intentional Personality Change Study (IPCS)
+
+The IPCS study is an ongoing longitudinal study collected at Washington University in St. Louis. Approximately 200 individuals completed the first wave of survey and ESM responses. In the proposed study, we will use the first wave of ESM data, which includes both measures of personality states as well as the DIAMONDS indicators. Specifically, we will use 15 indicators of Big Five personality (3 for each of the Big Five) and 8 indicators of situations.  
+
+```{r ipcs codebook}
+ipcs_codebook <- sprintf("%s/03-data/00-codebooks/codebook-2022-06-07.xlsx", wd) %>%
+  readxl::read_xlsx(., sheet = "ICPS"); ipcs_codebook
+```
+
+### Sample 3: Data from Sherman et al., 2015  
+
+Sherman and colleagues (2015) collected a single wave of experience sampling responses at Florida Atlantic University. Approximately 200 individuals responded to ESM surveys 8 times per day for one week. In the proposed study, we will use the measures of personality states (7 items from HEXACO) as well as the 8 items in the S8-I DIAMONDS scale.
+
+```{r sherman codebook}
+sherman_codebook <- sprintf("%s/03-data/00-codebooks/codebook-2022-06-07.xlsx", wd) %>%
+  readxl::read_xlsx(., sheet = "Sherman"); sherman_codebook
+```
+
+
+### Sample 4: Data from @horstmann_unveiling_2021
+
+Horstmann and colleages (2021) conducted a reanalysis of Sherman and colleagues' data and collected a replication and follow-up study in a German sample. Approximately 200 individuals completed ESM surveys 3 hours apart for two weeks. In the proposed study, we will use the measures of personality states (7 items from HEXACO) as well as the 8 items in the S8-I DIAMONDS scale.
+
+```{r horstmann codebook}
+horstmann_codebook <- sprintf("%s/03-data/00-codebooks/codebook-2022-06-07.xlsx", wd) %>%
+  readxl::read_xlsx(., sheet = "Horstmann"); horstmann_codebook
+```
+## Naming Items  
+```{r}
+cat_names <- sprintf("%s/03-data/00-codebooks/codebook-2022-06-07.xlsx", wd) %>%
+  readxl::read_xlsx(., sheet = "names"); cat_names
+
+expected <- tribble(
+  ~t_name, ~t_item, ~s_name, ~exp,
+   "A",  "A", "Adversity",      "-",
+   "A",  "A", "Deception",      "-",
+   "A",  "A", "Duty",           "",
+   "A",  "A", "Intellect",      "",
+   "A",  "A", "Mating",         "",
+   "A",  "A", "Negativity",     "",
+   "A",  "A", "pOsitivity",     "",
+   "A",  "A", "Sociality",      "+",
+   "A",  "Cmpn", "Adversity",    "-",
+   "A",  "Cmpn", "Deception",    "-",
+   "A",  "Cmpn", "Duty",    "",
+   "A",  "Cmpn", "Intellect",    "",
+   "A",  "Cmpn", "Mating",    "",
+   "A",  "Cmpn", "Negativity",    "",
+   "A",  "Cmpn", "pOsitivity",    "",
+   "A",  "Cmpn", "Sociality",    "+",
+   "A",  "kind", "Adversity",    "-",
+   "A",  "kind", "Deception",    "-",
+   "A",  "kind", "Duty",    "",
+   "A",  "kind", "Intellect",    "",
+   "A",  "kind", "Mating",    "",
+   "A",  "kind", "Negativity",    "",
+   "A",  "kind", "pOsitivity",    "",
+   "A",  "kind", "Sociality",    "+",
+   "A",  "Rspct", "Adversity",    "-",
+   "A",  "Rspct", "Deception",    "-",
+   "A",  "Rspct", "Duty",    "",
+   "A",  "Rspct", "Intellect",    "",
+   "A",  "Rspct", "Mating",    "",
+   "A",  "Rspct", "Negativity",    "",
+   "A",  "Rspct", "pOsitivity",    "",
+   "A",  "Rspct", "Sociality",    "+",
+   "A",  "rude", "Adversity",    "-",
+   "A",  "rude", "Deception",    "-",
+   "A",  "rude", "Duty",    "",
+   "A",  "rude", "Intellect",    "",
+   "A",  "rude", "Mating",    "",
+   "A",  "rude", "Negativity",    "",
+   "A",  "rude", "pOsitivity",    "",
+   "A",  "rude", "Sociality",    "+",
+   "A",  "Trust", "Adversity",    "-",
+   "A",  "Trust", "Deception",    "-",
+   "A",  "Trust", "Duty",    "",
+   "A",  "Trust", "Intellect",    "",
+   "A",  "Trust", "Mating",    "",
+   "A",  "Trust", "Negativity",    "",
+   "A",  "Trust", "pOsitivity",    "",
+   "A",  "Trust", "Sociality",    "+",
+   "C",  "C", "Adversity",        "",
+   "C",  "C", "Deception",        "",
+   "C",  "C", "Duty",            "+",
+   "C",  "C", "Intellect",        "",
+   "C",  "C", "Mating",           "",
+   "C",  "C", "Negativity",        "",
+   "C",  "C", "pOsitivity",        "",
+   "C",  "C", "Sociality",        "",
+   "C",  "lazy", "Adversity",      "",
+   "C",  "lazy", "Deception",      "",
+   "C",  "lazy", "Duty",     "+",
+   "C",  "lazy", "Intellect",      "",
+   "C",  "lazy", "Mating",      "",
+   "C",  "lazy", "Negativity",       "",
+   "C",  "lazy", "pOsitivity",       "",
+   "C",  "lazy", "Sociality",      "",
+   "C",  "Org", "Adversity",      "",
+   "C",  "Org", "Deception",      "",
+   "C",  "Org", "Duty",     "+",
+   "C",  "Org", "Intellect",      "",
+   "C",  "Org", "Mating",      "",
+   "C",  "Org", "Negativity",       "",
+   "C",  "Org", "pOsitivity",       "",
+   "C",  "Org", "Sociality",      "",
+   "C",  "Prdctv", "Adversity",      "",
+   "C",  "Prdctv", "Deception",      "",
+   "C",  "Prdctv", "Duty",     "+",
+   "C",  "Prdctv", "Intellect",      "",
+   "C",  "Prdctv", "Mating",      "",
+   "C",  "Prdctv", "Negativity",       "",
+   "C",  "Prdctv", "pOsitivity",       "",
+   "C",  "Prdctv", "Sociality",      "",
+   "C",  "reliable", "Adversity",      "",
+   "C",  "reliable", "Deception",      "",
+   "C",  "reliable", "Duty",     "+",
+   "C",  "reliable", "Intellect",      "",
+   "C",  "reliable", "Mating",      "",
+   "C",  "reliable", "Negativity",       "",
+   "C",  "reliable", "pOsitivity",       "",
+   "C",  "reliable", "Sociality",      "",
+   "C",  "Rspnbl", "Adversity",      "",
+   "C",  "Rspnbl", "Deception",      "",
+   "C",  "Rspnbl", "Duty",     "+",
+   "C",  "Rspnbl", "Intellect",      "",
+   "C",  "Rspnbl", "Mating",      "",
+   "C",  "Rspnbl", "Negativity",       "",
+   "C",  "Rspnbl", "pOsitivity",       "",
+   "C",  "Rspnbl", "Sociality",      "",
+   "E",  "Assert", "Adversity",      "",
+   "E",  "Assert", "Deception",      "",
+   "E",  "Assert", "Duty",     "+",
+   "E",  "Assert", "Intellect",      "",
+   "E",  "Assert", "Mating",      "",
+   "E",  "Assert", "Negativity",       "",
+   "E",  "Assert", "pOsitivity",       "",
+   "E",  "Assert", "Sociality",      "",
+   "E",  "E", "Adversity",        "",
+   "E",  "E", "Deception",       "",
+   "E",  "E", "Duty",       "",
+   "E",  "E", "Intellect",        "",
+   "E",  "E", "Mating",        "+",
+   "E",  "E", "Negativity",        "-", 
+   "E",  "E", "pOsitivity",         "+",
+   "E",  "E", "Sociality",        "+",
+   "E",  "EnerLev", "Adversity",      "",
+   "E",  "EnerLev", "Deception",     "",
+   "E",  "EnerLev", "Duty","",
+   "E",  "EnerLev", "Intellect",      "",
+   "E",  "EnerLev", "Mating",   "+",
+   "E",  "EnerLev", "Negativity",       "-", 
+   "E",  "EnerLev", "pOsitivity",        "+",
+   "E",  "EnerLev", "Sociality",      "+",
+   "E",  "outgoing", "Adversity",      "",
+   "E",  "outgoing", "Deception",     "",
+   "E",  "outgoing", "Duty","",
+   "E",  "outgoing", "Intellect",      "",
+   "E",  "outgoing", "Mating",   "+",
+   "E",  "outgoing", "Negativity",       "-", 
+   "E",  "outgoing", "pOsitivity",        "+",
+   "E",  "outgoing", "Sociality",      "+",
+   "E",  "quiet", "Adversity",      "",
+   "E",  "quiet", "Deception",     "",
+   "E",  "quiet", "Duty","",
+   "E",  "quiet", "Intellect",      "",
+   "E",  "quiet", "Mating",   "+",
+   "E",  "quiet", "Negativity",       "-", 
+   "E",  "quiet", "pOsitivity",        "+",
+   "E",  "quiet", "Sociality",      "+",
+   "E",  "Scblty", "Adversity",      "",
+   "E",  "Scblty", "Deception",     "",
+   "E",  "Scblty", "Duty","",
+   "E",  "Scblty", "Intellect",      "",
+   "E",  "Scblty", "Mating",   "+",
+   "E",  "Scblty", "Negativity",       "-", 
+   "E",  "Scblty", "pOsitivity",        "+",
+   "E",  "Scblty", "Sociality",      "+",
+   "N",  "Anxty", "Adversity",     "+",
+   "N",  "Anxty", "Deception",     "+",
+   "N",  "Anxty", "Duty",               "",
+   "N",  "Anxty", "Intellect",        "",
+   "N",  "Anxty", "Mating",        "",
+   "N",  "Anxty", "Negativity",   "+",
+   "N",  "Anxty", "pOsitivity",   "-",
+   "N",  "Anxty", "Sociality",        "",
+   "N",  "Depr", "Adversity",   "+",
+   "N",  "Depr", "Deception",   "+",
+   "N",  "Depr", "Duty",        "",
+   "N",  "Depr", "Intellect",      "",
+   "N",  "Depr", "Mating",   "",
+   "N",  "Depr", "Negativity",  "+",
+   "N",  "Depr", "pOsitivity",  "-",
+   "N",  "Depr", "Sociality",      "",
+   "N", "depressed", "Adversity",    "+",
+   "N", "depressed", "Deception",    "+",
+   "N", "depressed", "Duty",         "",
+   "N", "depressed", "Intellect",       "",
+   "N", "depressed", "Mating",    "",
+   "N", "depressed", "Negativity",   "+",
+   "N", "depressed", "pOsitivity",   "-",
+   "N", "depressed", "Sociality",       "",
+   "N",  "EmoVol", "Adversity",    "+",
+   "N",  "EmoVol", "Deception",    "+",
+   "N",  "EmoVol", "Duty",         "",
+   "N",  "EmoVol", "Intellect",       "",
+   "N",  "EmoVol", "Mating",    "",
+   "N",  "EmoVol", "Negativity",   "+",
+   "N",  "EmoVol", "pOsitivity",   "-",
+   "N",  "EmoVol", "Sociality",       "",
+   "N",  "N", "Adversity",    "+",
+   "N",  "N", "Deception",    "+",
+   "N",  "N", "Duty",         "",
+   "N",  "N", "Intellect",       "",
+   "N",  "N", "Mating",    "",
+   "N",  "N", "Negativity",   "+",
+   "N",  "N", "pOsitivity",   "-",
+   "N",  "N", "Sociality",       "",
+   "N",  "relaxed", "Adversity",    "+",
+   "N",  "relaxed", "Deception",    "+",
+   "N",  "relaxed", "Duty",         "",
+   "N",  "relaxed", "Intellect",       "",
+   "N",  "relaxed", "Mating",    "",
+   "N",  "relaxed", "Negativity",   "+",
+   "N",  "relaxed", "pOsitivity",   "-",
+   "N",  "relaxed", "Sociality",       "",
+   "N",  "worried", "Adversity",    "+",
+   "N",  "worried", "Deception",    "+",
+   "N",  "worried", "Duty",         "",
+   "N",  "worried", "Intellect",       "",
+   "N",  "worried", "Mating",    "",
+   "N",  "worried", "Negativity",   "+",
+   "N",  "worried", "pOsitivity",   "-",
+   "N",  "worried", "Sociality",       "",
+   "O",  "AesSens", "Adversity",       "",
+   "O",  "AesSens", "Deception",       "",
+   "O",  "AesSens", "Duty",       "",
+   "O",  "AesSens", "Intellect",    "+",
+   "O",  "AesSens", "Mating",       "",
+   "O",  "AesSens", "Negativity",       "",
+   "O",  "AesSens", "pOsitivity",       "",
+   "O",  "AesSens", "Sociality",       "",
+   "O",  "CrtvImag", "Adversity",      "",
+   "O",  "CrtvImag", "Deception",      "",
+   "O",  "CrtvImag", "Duty", "",
+   "O",  "CrtvImag", "Intellect",   "+",
+   "O",  "CrtvImag", "Mating",   "",
+   "O",  "CrtvImag", "Negativity",       "",
+   "O",  "CrtvImag", "pOsitivity",       "",
+   "O",  "CrtvImag", "Sociality",      "",
+   "O",  "IntCur", "Adversity",      "",
+   "O",  "IntCur", "Deception",      "",
+   "O",  "IntCur", "Duty", "",
+   "O",  "IntCur", "Intellect",   "+",
+   "O",  "IntCur", "Mating",   "",
+   "O",  "IntCur", "Negativity",       "",
+   "O",  "IntCur", "pOsitivity",       "",
+   "O",  "IntCur", "Sociality",      "",
+   "O",  "O", "Adversity",      "",
+   "O",  "O", "Deception",      "",
+   "O",  "O", "Duty", "",
+   "O",  "O", "Intellect",   "+",
+   "O",  "O", "Mating",   "",
+   "O",  "O", "Negativity",       "",
+   "O",  "O", "pOsitivity",       "",
+   "O",  "O", "Sociality",      ""
+) %>%
+  mutate(expy = ifelse(exp != "", "yes", "no"))
+```
+
+
+```{r eval=FALSE}
+bookdown::serve_book()
+```
+
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```

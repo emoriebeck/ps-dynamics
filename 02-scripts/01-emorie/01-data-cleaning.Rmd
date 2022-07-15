@@ -1,0 +1,320 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r pomp}
+pomp <- function(x) (x - min(x, na.rm = T))/(max(x, na.rm = T) - min(x, na.rm = T))*10
+```
+
+
+# Study 1: PAIRS  
+
+## State Data  
+### Load the Data  
+First, we have to do some pre-sharing cleaning to protect the identity of participants and only share variables we'll use in this study.  
+```{r pre clean pairs, eval = F}
+subs <- sprintf("%s/03-data/01-pairs/01-raw-data/subs.csv", wd) %>%
+  read_csv(.) 
+
+pairs_states <- sprintf("%s/03-data/01-pairs/01-raw-data/esm_w7_RENAMED_all.csv", wd) %>%
+  read_csv(.) %>%
+  select(one_of(pairs_codebook$orig_itemname)) %>%
+  mutate(esm.IDnum.w7 = mapvalues(esm.IDnum.w7, subs$old, subs$new, warn_missing = F)) #%>%
+  # group_by(esm.IDnum.w7) %>%
+  # filter(n() >= 20) %>%
+  # ungroup()
+save(pairs_states, file = sprintf("%s/03-data/01-pairs/01-raw-data/pairs_w7_deid.RData", wd))
+```
+
+```{r load pairs}
+load(sprintf("%s/03-data/01-pairs/01-raw-data/pairs_w7_deid.RData", wd))
+```
+
+### Make It Long and POMP  
+```{r pairs long}
+pairs_states_long <- pairs_states %>%
+  rename(SID = esm.IDnum.w7, Date = esm.startDateTime.w7) %>%
+  pivot_longer(names_to = "orig_itemname"
+               , values_to = "value"
+               , cols = c(-(SID:Date))
+               , values_drop_na = T) %>%
+  left_join(pairs_codebook %>% filter(level == "state") %>% select(category, orig_itemname, name, item, reverse) %>% distinct()) %>%
+  group_by(category) %>%
+  mutate(value = pomp(value)) %>%
+  ungroup()
+```
+
+### Add Change  
+```{r pairs delta}
+pairs_states_long <- pairs_states_long %>%
+  filter(category == "pers") %>%
+  mutate(value = ifelse(reverse == "yes", reverse.code(-1, value, mini = 0, maxi = 10), value)) %>%
+  group_by(SID, Date, category, name) %>%
+  summarize(value = mean(value, na.rm = T)
+            , item = name) %>%
+  ungroup() %>%
+  full_join(
+    pairs_states_long %>%
+      select(SID, Date, category, name, item, value)
+  ) %>%
+  distinct() %>%
+  group_by(SID, category, name, item) %>%
+  arrange(SID, category, name, item, mdy_hm(Date)) %>%
+  mutate(Date = mdy_hm(Date, tz = "America/Chicago")
+         , tdif = as.numeric(difftime(Date, lag(Date), units = "hours"))) %>%
+  filter(tdif > 1 | is.na(tdif)) %>%
+  mutate(tdif = as.numeric(difftime(lead(Date), Date, units = "hours"))
+         , delta_value = (lead(value) - value)/tdif) %>%
+  filter(tdif <= 24 | is.na(tdif)) %>%
+  ungroup()
+```
+
+### Save Data  
+```{r pairs save}
+save(pairs_states_long, file = sprintf("%s/03-data/01-pairs/02-clean-data/pairs-clean-edb.RData", wd))
+write_csv(pairs_states_long, file = sprintf("%s/03-data/01-pairs/02-clean-data/pairs-clean-edb.csv", wd))
+```
+
+## Trait Data  
+```{r pairs traits}
+
+```
+
+
+# Study 2: IPCS  
+
+## State Data  
+### Load the Data  
+```{r load ipcs}
+load(sprintf("%s/03-data/02-ipcs/01-raw-data/scrubbed_data_W1.RData", wd))
+
+ipcs_states <- ipcs_states %>%
+  group_by(SID) %>%
+  # filter(n() >= 20) %>%
+  arrange(SID, lubridate::ymd_hm(Date)) %>%
+  mutate(all_beeps = seq(1, n(), 1)) %>%
+  ungroup()
+```
+
+### Multiple Imputation  
+```{r ipcs mi}
+ipcs_states_mi <- data.frame(unclass(ipcs_states %>% select(-Date, -Hour, -Minute, -`Hour Block 1`, -HourBlock)))
+set.seed(5)
+ipcs_states_mi <- amelia(ipcs_states_mi, m = 1, ts = "all_beeps", cs = "SID")$imputations[[1]] %>%
+  as_tibble() %>%
+  full_join(ipcs_states %>% select(SID, Date, all_beeps)) %>%
+  select(-all_beeps); ipcs_states_mi
+```
+
+### Make It Long And POMP
+```{r ipcs long}
+ipcs_states_long <- ipcs_states_mi %>%
+  pivot_longer(names_to = c("name", "item")
+               , names_sep = "_"
+               , values_to = "value"
+               , cols = c(-SID, -Date)
+               , values_drop_na = T) %>%
+  left_join(ipcs_codebook %>% filter(level == "state") %>% select(category, name, item) %>% distinct()) %>%
+  group_by(category) %>%
+  mutate(value = pomp(value)) %>%
+  ungroup()
+```
+
+### Add Change  
+```{r ipcs delta}
+ipcs_states_long <- ipcs_states_long %>%
+  filter(category == "pers") %>%
+  group_by(SID, Date, category, name) %>%
+  summarize(value = mean(value, na.rm = T)
+            , item = name) %>%
+  ungroup() %>%
+  full_join(ipcs_states_long) %>%
+  distinct() %>%
+  group_by(SID, category, name, item) %>%
+  arrange(SID, category, name, item, ymd_hm(Date)) %>%
+  mutate(Date = ymd_hm(Date, tz = "America/Chicago")
+         , tdif = as.numeric(difftime(Date, lag(Date), units = "hours"))) %>%
+  filter(tdif > 1 | is.na(tdif)) %>%
+  mutate(tdif = as.numeric(difftime(lead(Date), Date, units = "hours"))
+         , delta_value = (lead(value) - value)/tdif) %>%
+  filter(tdif <= 24 | is.na(tdif)) %>%
+  ungroup()
+
+ipcs_subs <- (ipcs_states_long %>% select(SID, Date) %>% distinct() %>% group_by(SID) %>% tally() %>% filter(n() >= 20))$SID
+```
+
+### Save Data  
+```{r ipcs save}
+save(ipcs_states_long, file = sprintf("%s/03-data/02-ipcs/02-clean-data/ipcs-clean-edb.RData", wd))
+write_csv(ipcs_states_long, file = sprintf("%s/03-data/02-ipcs/02-clean-data/ipcs-clean-edb.csv", wd))
+```
+
+## Trait Data  
+```{r ipcs trait}
+participants <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1r808gQ-LWfG98J9rvt_CRMHtmCFgtdcfThl0XA0HHbM/edit?usp=sharing", sheet = "ESM") %>%
+  select(SID, Name, Email) %>%
+  mutate(new = seq(1, n(), 1),
+         new = ifelse(new < 10, paste("0", new, sep = ""), new))
+1
+
+baseline <- sprintf("%s/03-data/02-ipcs/01-raw-data/baseline_04.16.20.csv", wd) %>% 
+  read_csv() %>%
+  filter(!row_number() %in% c(1,2) & !is.na(SID) & SID %in% participants$SID) %>% 
+  select(SID, StartDate, gender, YOB, race, ethnicity) %>%
+  mutate(SID = mapvalues(SID, participants$SID, participants$new)) %>%
+  filter(SID %in% ipcs_subs) %>%
+  mutate(wave = 1,
+         gender = factor(gender, c(1,2), c("Male", "Female")),
+         YOB = substr(YOB, nchar(YOB)-4+1, nchar(YOB)),
+         race = mapvalues(race, 1:7, c(0,1,3,2,3,3,3)),
+         ethnicity = ifelse(!is.na(ethnicity), 3, NA),
+         race = ifelse(is.na(ethnicity), race, ifelse(ethnicity == 3, ethnicity)))  %>%
+  select(-ethnicity)
+
+baseline %>% group_by(gender) %>% tally() %>% ungroup() %>% mutate(perc = n/sum(n)*100)
+baseline %>% mutate(age = year(ymd_hms(StartDate)) - as.numeric(YOB)) %>% summarize_at(vars(age), lst(mean, sd), na.rm = T)
+```
+
+
+# Study 3: Sherman et al., (2015)  
+## State Data  
+### Load the Data  
+```{r sherman load}
+sherman_states <- sprintf("%s/03-data/03-sherman/01-raw-data/Independent Effects L1 Data.csv", wd) %>%
+  read_csv() %>%
+  select(one_of(sherman_codebook$orig_itemname)) %>%
+  filter(valid == 1) #%>%
+  # group_by(SID) %>%
+  # filter(n() >= 20) %>%
+  # ungroup()
+```
+
+### Make It Long and POMP  
+```{r sherman long}
+sherman_states_long <- sherman_states %>%
+  select(SID, Date = StartDate, everything(), -valid, -EndDate) %>%
+  pivot_longer(names_to = "orig_itemname"
+               , values_to = "value"
+               , cols = c(-SID, -Date)
+               , values_drop_na = T) %>%
+  left_join(sherman_codebook %>% filter(level == "state") %>% select(category, orig_itemname, name, item) %>% distinct()) %>%
+  group_by(category) %>%
+  mutate(value = pomp(value)) %>%
+  ungroup()
+```
+
+### Add Change  
+```{r sherman delta}
+sherman_states_long <- sherman_states_long %>%
+  filter(category == "pers") %>%
+  group_by(SID, Date, category, name) %>%
+  summarize(value = mean(value, na.rm = T)
+            , item = name) %>%
+  ungroup() %>%
+  full_join(
+    sherman_states_long %>%
+      filter(name == "E" | category == "sit") %>%
+      select(SID, Date, category, name, item, value)
+  ) %>%
+  distinct() %>%
+  group_by(SID, category, name, item) %>%
+  arrange(SID, category, name, item, mdy_hm(Date)) %>%
+  mutate(Date = mdy_hm(Date, tz = "America/New_York")
+         , tdif = as.numeric(difftime(Date, lag(Date), units = "hours"))) %>%
+  filter(tdif > 1 | is.na(tdif)) %>%
+  mutate(tdif = as.numeric(difftime(lead(Date), Date, units = "hours"))
+         , delta_value = (lead(value) - value)/tdif) %>%
+  filter(tdif <= 24 | is.na(tdif)) %>%
+  ungroup()
+
+sherman_subs <- (sherman_states_long %>% select(SID, Date) %>% distinct() %>% group_by(SID) %>% tally() %>% filter(n() >=20))$SID
+```
+
+### Save Data  
+```{r sherman save}
+save(sherman_states_long, file = sprintf("%s/03-data/03-sherman/02-clean-data/sherman-clean-edb.RData", wd))
+write_csv(sherman_states_long, file = sprintf("%s/03-data/03-sherman/02-clean-data/sherman-clean-edb.csv", wd))
+```
+
+## Trait Data  
+```{r sherman traits}
+sherman_traits <- sprintf("%s/03-data/03-sherman/01-raw-data/study1_esampL2_osf.csv", wd) %>% read_csv() %>%
+  filter(SID %in% sherman_subs)
+
+describe(sherman_traits$Age)
+sherman_traits %>% group_by(Sex) %>% tally() %>% ungroup() %>% mutate(perc = n/sum(n)*100)
+```
+
+# Study 4: Horstmann et al. (2021)
+## State Data  
+### Load the Data  
+```{r horstmann load}
+horstmann_states <- sprintf("%s/03-data/04-horstmann/01-raw-data/Horstman_etal_complete_data.csv", wd) %>%
+  read_csv() %>%
+  select(one_of(horstmann_codebook$orig_itemname)) #%>%
+  # group_by(session) %>%
+  # filter(n() >= 20) %>%
+  # ungroup()
+sid <- tibble(old = unique(horstmann_states$session)) %>% mutate(new = 1:n())
+```
+
+### Make It Long and POMP  
+```{r horstmann long}
+horstmann_states_long <- horstmann_states %>%
+  select(SID = session, Date = created, everything()) %>%
+  mutate(SID = mapvalues(SID, sid$old, sid$new)) %>%
+  pivot_longer(names_to = "orig_itemname"
+               , values_to = "value"
+               , cols = c(-SID, -Date)
+               , values_drop_na = T) %>%
+  left_join(horstmann_codebook %>% filter(level == "state") %>% select(category, orig_itemname, name, item) %>% distinct()) %>%
+  group_by(category) %>%
+  mutate(value = pomp(value)) %>%
+  ungroup()
+```
+
+### Add Change  
+```{r horstmann delta}
+horstmann_states_long <- horstmann_states_long %>%
+  filter(category == "pers") %>%
+  group_by(SID, Date, category, name) %>%
+  summarize(value = mean(value, na.rm = T)
+            , item = name) %>%
+  ungroup() %>%
+  full_join(
+    horstmann_states_long %>%
+      filter(name == "E" | category == "sit") %>%
+      select(SID, Date, category, name, item, value)
+  ) %>%
+  distinct() %>%
+  group_by(SID, category, name, item) %>%
+  arrange(SID, category, name, item, ymd_hms(Date)) %>%
+  mutate(Date = ymd_hms(Date, tz = "Europe/Berlin")
+         , tdif = as.numeric(difftime(Date, lag(Date), units = "hours"))) %>%
+  filter(tdif > 1 | is.na(tdif)) %>%
+  mutate(tdif = as.numeric(difftime(lead(Date), Date, units = "hours"))
+         , delta_value = (lead(value) - value)/tdif) %>%
+  filter(tdif <= 24 | is.na(tdif)) %>%
+  ungroup()
+
+horstmann_subs <- (horstmann_states_long %>% select(SID, Date) %>% distinct() %>% group_by(SID) %>% tally() %>% filter(n >= 20))$SID
+```
+
+### Save Data  
+```{r sherman save}
+save(horstmann_states_long, file = sprintf("%s/03-data/04-horstmann/02-clean-data/horstmann-clean-edb.RData", wd))
+write_csv(horstmann_states_long, file = sprintf("%s/03-data/04-horstmann/02-clean-data/horstmann-clean-edb.csv", wd))
+```
+
+## Traits  
+```{r}
+horstmann_traits <- sprintf("%s/03-data/04-horstmann/01-raw-data/Horstman_etal_complete_data.csv", wd) %>%
+  read_csv() %>%
+  mutate(session = mapvalues(session, sid$old, sid$new)) %>% 
+  filter(session %in% horstmann_subs)
+
+describe(horstmann_traits$ini_demo_na_age)
+horstmann_traits %>% select(session, ini_demo_na_sex) %>% distinct() %>% group_by(ini_demo_na_sex) %>% tally() %>% ungroup() %>% mutate(perc = n/sum(n)*100)
+```
+

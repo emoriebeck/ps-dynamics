@@ -1,0 +1,7 @@
+study p_name p_item s_name done
+03-sherman C C Duty NA
+04-horstmann E dominant Deception NA
+04-horstmann E dominant Duty NA
+04-horstmann E E Duty NA
+04-horstmann E E Intellect NA
+04-horstmann O O Adversity NA

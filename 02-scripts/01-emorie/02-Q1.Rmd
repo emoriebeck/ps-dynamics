@@ -1,0 +1,1037 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# Question 1: Univariate Change As Outcome Models of Personality States and Situation Characteristics  
+
+## Data Setup  
+### Idiographic  
+#### Study 1: PAIRS  
+```{r q1 load pairs}
+load(sprintf("%s/03-data/01-pairs/02-clean-data/pairs-clean-edb.RData", wd))
+```
+
+```{r q1 pairs idio setup}
+q1_idio_pairs_nested <- pairs_states_long %>%
+  filter(!is.na(delta_value) & !is.na(value)) %>%
+  mutate(value2 = value^2) %>%
+  group_by(SID, category, name, item) %>%
+  filter(n() >= 19 & sd(value) != 0) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q1 pairs idio save}
+save_fun <- function(d, sid, cat, name, item){
+  save(d, file = sprintf("%s/03-data/01-pairs/03-q1-idio/%s-%s-%s-%s.RData", wd, sid, cat, name, item))
+}
+
+q1_idio_pairs_nested %>%
+  mutate(d = pmap(list(data, SID, category, name, item), save_fun))
+```
+
+#### Study 2: IPCS  
+
+```{r q1 load ipcs}
+load(sprintf("%s/03-data/02-ipcs/02-clean-data/ipcs-clean-edb.RData", wd))
+```
+
+```{r q1 ipcs idio setup}
+q1_idio_ipcs_nested <- ipcs_states_long %>%
+  filter(!is.na(delta_value) & !is.na(value)) %>%
+  mutate(value2 = value^2) %>%
+  group_by(SID, category, name, item) %>% 
+  filter(n() >= 19 & sd(value) != 0) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q1 ipcs idio save}
+save_fun <- function(d, sid, cat, name, item){
+  save(d, file = sprintf("%s/03-data/02-ipcs/03-q1-idio/%s-%s-%s-%s.RData", wd, sid, cat, name, item))
+}
+
+q1_idio_ipcs_nested %>%
+  mutate(d = pmap(list(data, SID, category, name, item), save_fun))
+```
+
+#### Study 3: Sherman et al., 2015  
+```{r q1 load sherman}
+load(sprintf("%s/03-data/03-sherman/02-clean-data/sherman-clean-edb.RData", wd))
+```
+
+```{r q1 sherman idio setup}
+q1_idio_sherman_nested <- sherman_states_long %>%
+  filter(!is.na(delta_value) & !is.na(value)) %>%
+  mutate(value2 = value^2) %>%
+  group_by(SID, category, name, item) %>% 
+  filter(n() >= 19 & sd(value) != 0) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q1 sherman idio save}
+save_fun <- function(d, sid, cat, name, item){
+  save(d, file = sprintf("%s/03-data/03-sherman/03-q1-idio/%s-%s-%s-%s.RData", wd, sid, cat, name, item))
+}
+
+q1_idio_sherman_nested %>%
+  mutate(d = pmap(list(data, SID, category, name, item), save_fun))
+```
+
+#### Study 4: Horstmann et al., 2021  
+
+```{r q1 load horstmann}
+load(sprintf("%s/03-data/04-horstmann/02-clean-data/horstmann-clean-edb.RData", wd))
+```
+
+```{r q1 horstmann idio setup}
+q1_idio_horstmann_nested <- horstmann_states_long %>%
+  filter(!is.na(delta_value) & !is.na(value)) %>%
+  mutate(value2 = value^2) %>%
+  group_by(SID, category, name, item) %>%  
+  filter(n() >= 19 & sd(value) != 0) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q1 horstmann idio save}
+save_fun <- function(d, sid, cat, name, item){
+  save(d, file = sprintf("%s/03-data/04-horstmann/03-q1-idio/%s-%s-%s-%s.RData", wd, sid, cat, name, item))
+}
+
+q1_idio_horstmann_nested %>%
+  mutate(d = pmap(list(data, SID, category, name, item), save_fun))
+```
+
+### Multilevel Models  
+#### Study 1: PAIRS  
+```{r q1 pairs idio setup}
+q1_mlm_pairs_nested <- pairs_states_long %>%
+  filter(!is.na(delta_value) & !is.na(value)) %>%
+  group_by(SID, category, name, item) %>%  
+  filter(n() >= 19 & sd(value) != 0) %>%
+  group_by(category, name, item) %>%
+  nest() %>%
+  ungroup() 
+```
+
+```{r q1 pairs mlm save}
+save_fun <- function(d, cat, name, item){
+  save(d, file = sprintf("%s/03-data/01-pairs/04-q1-mlm/%s-%s-%s.RData", wd, cat, name, item))
+}
+
+q1_mlm_pairs_nested %>%
+  mutate(d = pmap(list(data, category, name, item), save_fun))
+```
+
+#### Study 2: IPCS  
+```{r q1 ipcs idio setup}
+q1_mlm_ipcs_nested <- ipcs_states_long %>%
+  filter(!is.na(delta_value) & !is.na(value)) %>%
+  group_by(SID, category, name, item) %>%  
+  filter(n() >= 19 & sd(value) != 0) %>%
+  group_by(category, name, item) %>%
+  nest() %>%
+  ungroup() 
+```
+
+```{r q1 ipcs mlm save}
+save_fun <- function(d, cat, name, item){
+  save(d, file = sprintf("%s/03-data/02-ipcs/04-q1-mlm/%s-%s-%s.RData", wd, cat, name, item))
+}
+
+q1_mlm_ipcs_nested %>%
+  mutate(d = pmap(list(data, category, name, item), save_fun))
+```
+
+#### Study 3: Sherman et al., 2015  
+```{r q1 sherman idio setup}
+q1_mlm_sherman_nested <- sherman_states_long %>%
+  filter(!is.na(delta_value) & !is.na(value)) %>%
+  group_by(SID, category, name, item) %>%  
+  filter(n() >= 19 & sd(value) != 0) %>%
+  group_by(category, name, item) %>%
+  nest() %>%
+  ungroup() 
+```
+
+```{r q1 sherman mlm save}
+save_fun <- function(d, cat, name, item){
+  save(d, file = sprintf("%s/03-data/03-sherman/04-q1-mlm/%s-%s-%s.RData", wd, cat, name, item))
+}
+
+q1_mlm_sherman_nested %>%
+  mutate(d = pmap(list(data, category, name, item), save_fun))
+```
+
+#### Study 4: Horstmann et al., 2021  
+```{r q1 horstmann idio setup}
+q1_mlm_horstmann_nested <- horstmann_states_long %>%
+  filter(!is.na(delta_value) & !is.na(value)) %>%
+  group_by(SID, category, name, item) %>%  
+  filter(n() >= 19 & sd(value) != 0) %>%
+  group_by(category, name, item) %>%
+  nest() %>%
+  ungroup() 
+```
+
+```{r q1 horstmann mlm save}
+save_fun <- function(d, cat, name, item){
+  save(d, file = sprintf("%s/03-data/04-horstmann/04-q1-mlm/%s-%s-%s.RData", wd, cat, name, item))
+}
+
+q1_mlm_horstmann_nested %>%
+  mutate(d = pmap(list(data, category, name, item), save_fun))
+```
+
+## Models  
+### Idiographic  
+#### Model Function  
+```{r q1 idio model function}
+q1_idio_model_fun <- function(study, sid, cat, name, item){
+  study2 <- mapvalues(
+    study
+    , c("01-pairs", "02-ipcs", "03-sherman", "04-horstmann")
+    , c("pairs", "ipcs", "sherman", "horstmann")
+    , warn_missing = F
+    )
+  load(sprintf("%s/03-data/%s/03-q1-idio/%s-%s-%s-%s.RData", wd, study, sid, cat, name, item))
+  
+  # fit the loess model
+  ml <- loess(delta_value ~ value, data = d)
+  
+  # get loess predictions
+  pl <- predict(ml, newdata = tibble(value = seq(0, 10, .2)))
+  
+  # count sign changes = number of equilibria
+  num_equil <- sum(sign(pl) != sign(lag(pl)), na.rm = T)
+  
+  # setup rhs of formula 
+  rhs <- "value"
+  if(num_equil > 1) rhs <- c(rhs, "value2")
+  rhs <- paste0(rhs, collapse = " + ")
+  
+  # add in the lhs
+  f <- paste(c("delta_value", rhs), collapse = " ~ ")
+  
+  # load sample model 
+  if(num_equil <= 1) load(sprintf("%s/05-results/01-q1/01-idio/sample-idio-linear.RData", wd)) else load(sprintf("%s/05-results/01-q1/01-idio/sample-idio-quad.RData", wd))
+  
+  # updated from sample run to prevent compilation and speed runtime
+  m <- update(m1
+             , f = f
+             , newdata = d
+             , iter = 2000
+             , warmup = 1000
+             # , cores = 4
+             ) 
+  save(m, file = sprintf("%s/05-results/01-q1/01-idio/01-models/%s-%s-%s-%s-%s.RData", wd, study2, sid, cat, name, item))
+  
+  fx <- broom.mixed::tidy(m)
+  save(fx, file = sprintf("%s/05-results/01-q1/01-idio/02-summary/%s-%s-%s-%s-%s.RData", wd, study2, sid, cat, name, item))
+  
+  draws <- as_draws_df(m) %>% as_tibble()
+  save(draws, file = sprintf("%s/05-results/01-q1/01-idio/05-draws/%s-%s-%s-%s-%s.RData", wd, study2, sid, cat, name, item))
+  
+  # find attractor location by solving for x
+  # linear               # quadratic
+  # y = b0 + b1*x        x = (-b +/ sqrt(b2 - 4ac))/2a
+  # 0 = b0 + b1*x        
+  # -b0 = b1*x         
+  # x = -b0/b1
+  equil <- if(num_equil == 1){
+    bind_cols(draws, tibble(attr_loc1 = -1*draws$b_Intercept/draws$b_value))
+  } else {
+    bind_cols(draws, pmap_df(list(draws$b_value2, draws$b_value, draws$b_Intercept), quad_form))
+  }
+  
+  # find attractor strength
+  equil <- if(num_equil == 1){
+    bind_cols(equil, tibble(attr_str1 = draws$b_value))
+  } else {
+  # b1*x + b2*x2
+  # dx = b1 + 2*b2*x, where x is the location of an equilibrium
+    bind_cols(
+      equil
+      , tibble(
+        attr_str1 = equil$b_value + 2*equil$b_value2*equil$attr_loc1
+        , attr_str2 = equil$b_value + 2*equil$b_value2*equil$attr_loc2
+      )
+      )
+  }
+  
+  equil <- equil %>% 
+    select(starts_with("b_"), starts_with("attr")) %>%
+    posterior_summary() %>%
+    as.data.frame() %>% 
+    rownames_to_column("term")
+  save(equil, file = sprintf("%s/05-results/01-q1/01-idio/03-equil/%s-%s-%s-%s-%s.RData", wd, study2, sid, cat, name, item))
+  
+  frame <- tibble(value = seq(0,10,.2))
+  if(num_equil > 1) frame <- frame %>% mutate(value2 = value^2)
+  
+  pred <- bind_cols(frame, predict(m, newdata = frame))
+  save(pred, file = sprintf("%s/05-results/01-q1/01-idio/04-predictions/%s-%s-%s-%s-%s.RData", wd, study2, sid, cat, name, item))
+  
+  rm(list = c("draws", "equil", "m", "m1", "d", "frame", "pred", "fx", "rhs", "f"))
+}
+
+quad_form <- function(a,b,c){
+  if(delta(a,b,c) > 0){ # first case D>0
+    x_1    <- (-b+sqrt(delta(a,b,c)))/(2*a)
+    x_2    <- (-b-sqrt(delta(a,b,c)))/(2*a)
+    result <- tibble(attr_loc1 = x_1, attr_loc2 = x_2)
+  }
+  else if(delta(a,b,c) == 0){ # second case D=0
+    result <- tibble(attr_loc1 = -b/(2*a), attr_loc2 = NA_real_)
+  }
+  else { # third case D<0
+    result <- tibble(attr_loc1 = NA_real_, attr_loc2 = NA_real_)
+  } 
+}
+
+# Constructing delta
+delta<-function(a,b,c){
+      b^2-4*a*c
+}
+```
+
+#### Sample Models  
+```{r}
+load("/Volumes/Emorie/other projects/ps-oscillators/03-data/02-ipcs/03-q1-idio/01-pers-A-Rspct.RData")
+m1 <- brm(delta_value ~ value
+             , data = d
+             , iter = 100
+             , warmup = 10
+             , cores = 4
+             )
+save(m1, file = sprintf("%s/05-results/01-q1/01-idio/sample-idio-linear.RData", wd))
+
+m1 <- update(m1
+             , f = delta_value ~ value + value2
+             , newdata = d
+             , iter = 100
+             , warmup = 10
+             , cores = 4
+             )
+save(m1, file = sprintf("%s/05-results/01-q1/01-idio/sample-idio-quad.RData", wd))
+```
+
+#### Run Models  
+```{r q1 idio run models}
+done <- tibble(file = list.files(sprintf("%s/05-results/01-q1/01-idio/01-models", wd))) %>%
+  separate(file, c("study", "SID", "category", "name", "item"), sep = "-") %>%
+  mutate(study =  mapvalues(study
+    , c("pairs", "ipcs", "sherman", "horstmann")
+    , c("01-pairs", "02-ipcs", "03-sherman", "04-horstmann")
+    , warn_missing = F
+    )
+    , item = str_remove_all(item, ".RData")
+    , done = "done")
+q1_idio_nested <- tibble(study = c("01-pairs", "02-ipcs", "03-sherman", "04-horstmann")) %>%
+  mutate(file = map(study, ~sprintf("%s/03-data/%s/03-q1-idio", wd, .) %>% list.files())) %>%
+  unnest(file) %>%
+  separate(file, c("SID", "category", "name", "item"), sep = "-") %>%
+  mutate(item = str_remove_all(item, ".RData")) %>%
+  full_join(done) %>% filter(is.na(done))
+
+plan(multisession(workers = 12L))
+q1_idio_nested <- q1_idio_nested %>%
+  mutate(
+    m = future_pmap(
+    # m = pmap(
+      list(study, SID, category, name, item)
+      , .f = safely(q1_idio_model_fun, NA_real_)
+      # , .f = q1_idio_model_fun
+      , .progress = T
+      , .options = furrr_options(
+        globals = c("wd", "quad_form", "delta")
+        , packages = c("plyr", "tidyverse", "brms")
+      )
+      )
+    )
+closeAllConnections()
+```
+
+#### Save Arguments For Cluster  
+```{r q1 idio save arguments}
+q1_idio_nested %>%
+  write_delim(., file = sprintf("%s/02-scripts/03-cluster/args/q1-idio.txt", wd))
+```
+
+<!-- #### DELETE LATER   -->
+<!-- ```{r} -->
+<!-- pred_fun <- function(study, sid, cat, name, item){ -->
+<!--   study2 <- mapvalues( -->
+<!--     study -->
+<!--     , c("pairs", "ipcs", "sherman", "horstmann") -->
+<!--     , c("01-pairs", "02-ipcs", "03-sherman", "04-horstmann") -->
+<!--     , warn_missing = F -->
+<!--     ) -->
+<!--   load(sprintf("%s/05-results/01-q1/01-idio/01-models/%s-%s-%s-%s-%s.RData", wd, study, sid, cat, name, item)) -->
+<!--   draws <- as_draws_df(m) %>% as_tibble() -->
+<!--   num_equil <- if(any(grepl("value2", rownames(fixef(m))))) 2 else 1 -->
+<!--   # find attractor location by solving for x -->
+<!--   # linear               # quadratic -->
+<!--   # y = b0 + b1*x        x = (-b +/ sqrt(b2 - 4ac))/2a -->
+<!--   # 0 = b0 + b1*x         -->
+<!--   # -b0 = b1*x          -->
+<!--   # x = -b0/b1 -->
+<!--   equil <- if(num_equil == 1){ -->
+<!--     bind_cols(draws, tibble(attr_loc1 = -1*draws$b_Intercept/draws$b_value)) -->
+<!--   } else { -->
+<!--     bind_cols(draws, pmap_df(list(draws$b_value2, draws$b_value, draws$b_Intercept), quad_form)) -->
+<!--   } -->
+
+<!--   # find attractor strength -->
+<!--   equil <- if(num_equil == 1){ -->
+<!--     bind_cols(equil, tibble(attr_str1 = draws$b_value)) -->
+<!--   } else { -->
+<!--   # b1*x + b2*x2 -->
+<!--   # dx = b1 + 2*b2*x, where x is the location of an equilibrium -->
+<!--     bind_cols( -->
+<!--       equil -->
+<!--       , tibble( -->
+<!--         attr_str1 = equil$b_value + 2*equil$b_value2*equil$attr_loc1 -->
+<!--         , attr_str2 = equil$b_value + 2*equil$b_value2*equil$attr_loc2 -->
+<!--       ) -->
+<!--       ) -->
+<!--   } -->
+
+<!--   equil <- equil %>%  -->
+<!--     select(starts_with("b_"), starts_with("attr")) %>% -->
+<!--     posterior_summary() %>% -->
+<!--     as.data.frame() %>%  -->
+<!--     rownames_to_column("term") -->
+<!--   save(equil, file = sprintf("%s/05-results/01-q1/01-idio/03-equil/%s-%s-%s-%s-%s.RData", wd, study, sid, cat, name, item)) -->
+
+<!--   frame <- tibble(value = seq(0,10,.2)) -->
+<!--   if(num_equil > 1) frame <- frame %>% mutate(value2 = value^2) -->
+
+<!--   pred <- bind_cols(frame, predict(m, newdata = frame)) -->
+<!--   save(pred, file = sprintf("%s/05-results/01-q1/01-idio/04-predictions/%s-%s-%s-%s-%s.RData", wd, study, sid, cat, name, item)) -->
+
+<!--   rm(list = c("draws", "equil", "m", "m1", "d", "frame", "pred", "fx", "rhs", "f")) -->
+<!-- } -->
+
+<!-- done <- tibble(file=list.files(sprintf("%s/05-results/01-q1/01-idio/01-models", wd))[list.files(sprintf("%s/05-results/01-q1/01-idio/01-models", wd)) %in% list.files(sprintf("%s/05-results/01-q1/01-idio/03-equil", wd))]) %>% -->
+<!--   separate(file, c("study", "SID", "category", "name", "item"), sep = "-") %>% -->
+<!--   mutate(item = str_remove_all(item, ".RData") -->
+<!--     , done = "done") -->
+<!-- q1_idio_nested <- tibble(file = sprintf("%s/05-results/01-q1/01-idio/01-models", wd) %>% list.files()) %>% -->
+<!--   separate(file, c("study", "SID", "category", "name", "item"), sep = "-") %>% -->
+<!--   mutate(item = str_remove_all(item, ".RData")) %>% -->
+<!--   full_join(done) %>% filter(is.na(done)) -->
+
+<!-- plan(multisession(workers = 12L)) -->
+<!-- q1_idio_nested <- q1_idio_nested %>% -->
+<!--   mutate( -->
+<!--     m = future_pmap( -->
+<!--     # m = pmap( -->
+<!--       list(study, SID, category, name, item) -->
+<!--       # , .f = safely(pred_fun, NA_real_) -->
+<!--       , .f = pred_fun -->
+<!--       , .progress = T -->
+<!--       , .options = furrr_options( -->
+<!--         globals = c("wd", "quad_form", "delta") -->
+<!--         , packages = c("plyr", "tidyverse", "brms") -->
+<!--       ) -->
+<!--       ) -->
+<!--     ) -->
+<!-- closeAllConnections() -->
+<!-- ``` -->
+
+
+
+
+### Multilevel Models  
+#### Model Function  
+```{r q1 mlm model function}
+q1_mlm_model_fun <- function(study, cat, name, item){
+  study2 <- mapvalues(
+    study
+    , c("01-pairs", "02-ipcs", "03-sherman", "04-horstmann")
+    , c("pairs", "ipcs", "sherman", "horstmann")
+    , warn_missing = F
+    )
+  
+  # load the data 
+  load(sprintf("%s/03-data/%s/04-q1-mlm/%s-%s-%s.RData", wd, study, cat, name, item))
+  
+  # setup the formula 
+  # actually stays consistent, so here more for convenience
+  f <- bf(delta_value ~ 1 + value + (1 + value | SID))
+  
+  # load the sample model 
+  load(sprintf("%s/05-results/01-q1/02-mlm/sample-mlm-linear.RData", wd))
+  
+  # run the model using update for faster compilation 
+  m <- update(
+    m1
+    , f = f
+    , newdata = d
+    , iter = 2000
+    , warmup = 1000
+    , cores = 4
+  )
+  save(m, file = sprintf("%s/05-results/01-q1/02-mlm/01-models/%s-%s-%s-%sRData", wd, study2, cat, name, item))
+  
+  # get fixed and participant-specific term estimates
+  fx <- broom.mixed::tidy(m)
+  rx <- coef(m, probs = c(0.025, 0.975))[[1]] %>% array_tree(3) %>% 
+      tibble(term = names(.), data = .) %>% 
+      mutate(data = map(data, ~(.) %>% data.frame %>% 
+        rownames_to_column("SID"))) %>% 
+      unnest(data) %>% 
+      select(term, SID, estimate = Estimate, conf.low = Q2.5, conf.high = Q97.5)
+  save(fx, rx, file = sprintf("%s/05-results/01-q1/01-idio/02-summary/%s-%s-%s-%sRData", wd, study2, cat, name, item))
+  
+  # get and wrangle fixed and random draws
+  draws <- as_draws_df(m)
+  fx_draws <- draws %>% select(-contains("r_SID["))
+  rx_draws <- draws %>% 
+    mutate(n = 1:n()) %>%
+    select(contains("r_SID["), n) %>% 
+    pivot_longer(
+      names_to = "term"
+      , values_to = "estimate"
+      , cols = -n
+    ) %>%
+    mutate(
+      term = str_remove_all(term, "r_SID\\[")
+      , term = str_remove_all(term, "[, ]")
+      , term = str_remove_all(term, "\\]")
+      , SID = str_remove_all(term, "[A-Z a-z]")
+      , term = str_remove_all(term, "[0-9]")
+    ) %>%
+    pivot_wider(names_from = "term", values_from = "estimate") %>%
+    full_join(fx_draws %>% mutate(n = 1:n()) %>% select(b_Intercept, b_value, n)) %>%
+    mutate(Intercept = Intercept + b_Intercept
+           , value = value + b_value) %>%
+    select(-b_Intercept, -b_value)
+  save(fx_draws, rx_draws
+       , file = sprintf("%s/05-results/01-q1/02-mlm/05-draws/%s-%s-%s-%s.RData", wd, study2, cat, name, item))
+  
+  # find attractor location by solving for x
+  # could have used hypothesis() because we don't have to solve for quadratics but leaving it 
+  # using posterior draws and then later summarizing for consistency with idiographic Q1
+  # linear               # quadratic
+  # y = b0 + b1*x        x = (-b +/ sqrt(b2 - 4ac))/2a
+  # 0 = b0 + b1*x        
+  # -b0 = b1*x         
+  # x = -b0/b1
+  fx_equil <- fx_draws %>% 
+    as.data.frame() %>%
+    mutate(attr_loc = -1*b_Intercept/b_value)
+  rx_equil <- rx_draws %>%
+    mutate(attr_loc = -1*Intercept/value)
+  
+  # find attractor strength
+  equil <- fx_equil %>% 
+    mutate(n = 1:n(), SID = "overall") %>% 
+    select(SID, n, attr_loc, attr_str = b_value) %>%
+    full_join(
+      rx_equil %>% 
+        select(n, SID, attr_loc, attr_str = value)
+    )
+  
+  # summarize the posterior draws
+  equil <- equil %>% 
+    select(SID, starts_with("b_"), starts_with("attr")) %>%
+    group_by(SID) %>%
+    nest() %>% 
+    ungroup() %>%
+    mutate(
+      data = map(data
+                 , ~(.) %>% 
+                   posterior_summary %>%
+                   as.data.frame() %>% 
+                   rownames_to_column("term")
+                )
+      ) %>%
+    unnest(data)
+  
+  save(equil, file = sprintf("%s/05-results/01-q1/01-idio/03-equil/%s-%s-%s-%s.RData", wd, study2, cat, name, item))
+  
+  # setup predictions for plotting
+  frame <- tibble(value = seq(0,10,.2))
+  fx_pred <- bind_cols(frame, fitted(m, newdata = frame, re_formula = NA))
+  frame <- crossing(SID = unique(rx_equil$SID), value = seq(0,10,.2))
+  rx_pred <- bind_cols(frame, fitted(m, newdata = frame))
+  save(fx_pred, rx_pred
+       , file = sprintf("%s/05-results/01-q1/01-idio/04-predictions/%s-%s-%s-%s.RData", wd, study2, cat, name, item))
+  
+  # clean up and return nothing
+  rm(list = c("frame", "fx_pred", "m1", "m", "fx", "rx", "fx_draws", "rx_draws", "equil", "draws"))
+  gc()
+  return(T)
+}
+```
+
+#### Sample Models  
+```{r q1 mlm sample model}
+# load sample data
+load("/Volumes/Emorie/other projects/ps-oscillators/03-data/02-ipcs/04-q1-mlm/pers-A-A.RData")
+# load("03-data/02-ipcs/04-q1-mlm/pers-A-A.RData")
+
+# setup the formula 
+f <- bf(delta_value ~ 1 + value + (1 + value | SID))
+
+# sample model
+m1 <- brm(f
+         , data = d
+         , iter = 100
+         , warmup = 10
+         , cores = 4
+         )
+save(m1, file = sprintf("%s/05-results/01-q1/02-mlm/sample-mlm-linear.RData", wd))
+# save(m1, file = "05-results/01-q1/02-mlm/sample-mlm-linear.RData")
+```
+
+
+#### Run Models  
+```{r q1 mlm run models}
+done <- tibble(file = list.files(sprintf("%s/05-results/01-q1/02-mlm/01-models", wd))) %>%
+  separate(file, c("study", "category", "name", "item"), sep = "-") %>%
+  mutate(study =  mapvalues(study
+    , c("pairs", "ipcs", "sherman", "horstmann")
+    , c("01-pairs", "02-ipcs", "03-sherman", "04-horstmann")
+    , warn_missing = F
+    )
+    , item = str_remove_all(item, ".RData")
+    , done = "done")
+
+q1_mlm_nested <- tibble(study = c("01-pairs", "02-ipcs", "03-sherman", "04-horstmann")) %>%
+  mutate(file = map(study, ~sprintf("%s/03-data/%s/04-q1-mlm", wd, .) %>% list.files())) %>%
+  unnest(file) %>%
+  separate(file, c("category", "name", "item"), sep = "-") %>%
+  mutate(item = str_remove_all(item, ".RData")) %>%
+  full_join(done) %>% filter(is.na(done))
+
+plan(multisession(workers = 2L))
+q1_mlm_nested %>%
+  mutate(
+    m = future_pmap(
+    # m = pmap(
+      list(study, category, name, item)
+      # , .f = possibly(q1_mlm_model_fun, NA_real_)
+      , .f = q1_mlm_model_fun
+      , .progress = T
+      , .options = furrr_options(
+        globals = c("wd", "quad_form", "delta")
+        , packages = c("plyr", "tidyverse", "brms")
+      )
+      )
+    )
+closeAllConnections()
+```
+
+#### Save Arguments For Cluster  
+```{r q1 mlm save arguments}
+q1_mlm_nested %>%
+  write_delim(., file = sprintf("%s/02-scripts/03-cluster/args/q1-mlm.txt", wd))
+```
+
+## Compile Results  
+### Idiographic  
+#### Figures  
+```{r}
+loadRData <- function(file, obj){
+    #loads an RData file, and returns it
+    path <- sprintf("%s/05-results/01-q1/01-idio/04-predictions/%s", wd, file)
+    load(path)
+    get(ls()[grepl(obj, ls())])
+}
+
+fix_pred <- function(d){
+  if(ncol(d) == 2){
+    bind_cols(
+      d[,1]
+      , d[,2] %>% 
+        as.matrix() %>% 
+        as_tibble() %>% 
+        setNames(c("Estimate", "Est.Error", "Q2.5", "Q97.5"))
+      ) 
+    } else {
+      d
+    }
+}
+
+
+q1_idio_pred <- tibble(file = sprintf("%s/05-results/01-q1/01-idio/04-predictions", wd) %>% list.files()) %>%
+  mutate(rx = map2(file, "pred", loadRData)) %>%
+  separate(file, c("study", "SID", "category", "name", "item"), sep = "-") %>%
+  mutate(item = str_remove(item, ".RData")
+         , name = ifelse(study == "ipcs" & name == "Sociability", "Sociality", name)
+         , item = ifelse(study == "ipcs" & item == "Sociability", "Sociality", item)
+         , rx = map(rx, fix_pred))
+```
+
+```{r}
+q1_idio_cao_plots <- function(d, study, cat){
+  d %>%
+    ggplot(aes(x = value, y = Estimate)) + 
+      # geom_smooth(aes(color = name, group = SID), se = F, alpha = .3, size = .3) + 
+      geom_line(aes(color = name, group = SID), alpha = .3, size = .3) +
+      stat_smooth(method = "lm"
+                  , formula = y ~ x
+                  , size = 1
+                  , color = "black") + 
+      geom_hline(aes(yintercept = 0), linetype = "dashed") + 
+      labs(x = "Level", y = "Change") +
+      facet_wrap(~name, ncol = 3) + 
+      theme_classic() + 
+      theme(
+        legend.position = "none"
+        , strip.background = element_blank()
+        , strip.text = element_text(face = "bold", size = rel(1.1))
+        , axis.text = element_text(face = "bold")
+        , axis.title = element_text(face = "bold", size = rel(1))
+        , plot.title = element_text(hjust = .5, face = "bold")
+        , panel.background = element_rect(color = "black", size = 1)
+        )
+  ggsave(file=sprintf("%s/05-results/04-plots/01-q1/01-idio/%s_%s_cao_plot_random.png", wd, study, cat), width = 6, height = 5)
+  ggsave(file=sprintf("%s/05-results/04-plots/01-q1/01-idio/%s_%s_cao_plot_random.pdf", wd, study, cat), width = 6, height = 5)
+}
+
+q1_idio_pred_plot <- q1_idio_pred %>% 
+  unnest(rx) %>%
+  filter(name == item) %>%
+  mutate(name = factor(name, cat_names$name_old, cat_names$name_new)) %>%
+  group_by(study, category) %>%
+  nest() %>% 
+  ungroup() %>%
+  mutate(p = pmap(list(data, study, category), q1_idio_cao_plots))
+```
+
+
+#### Tables  
+```{r}
+loadRData <- function(file, obj){
+    #loads an RData file, and returns it
+    path <- sprintf("%s/05-results/01-q1/01-idio/03-equil/%s", wd, file)
+    load(path)
+    get(ls()[grepl(obj, ls())])
+}
+
+q1_idio_equil <- tibble(file = sprintf("%s/05-results/01-q1/01-idio/03-equil", wd) %>% list.files()) %>%
+  mutate(equil = map2(file, "equil", loadRData)) %>%
+  separate(file, c("study", "SID", "category", "name", "item"), sep = "-") %>%
+  mutate(item = str_remove(item, ".RData")) %>%
+  mutate(name = ifelse(study == "ipcs" & name == "Sociability", "Sociality", name)
+         , item = ifelse(study == "ipcs" & item == "Sociability", "Sociality", item))
+```
+
+```{r}
+loadRData <- function(file, obj){
+    #loads an RData file, and returns it
+    path <- sprintf("%s/05-results/01-q1/01-idio/02-summary/%s", wd, file)
+    load(path)
+    get(ls()[grepl(obj, ls())])
+}
+
+q1_idio_fx <- tibble(file = sprintf("%s/05-results/01-q1/01-idio/02-summary", wd) %>% list.files()) %>%
+  mutate(fx = map2(file, "fx", loadRData)) %>%
+  separate(file, c("study", "SID", "category", "name", "item"), sep = "-") %>%
+  mutate(item = str_remove(item, ".RData")) %>%
+  mutate(name = ifelse(study == "ipcs" & name == "Sociability", "Sociality", name)
+         , item = ifelse(study == "ipcs" & item == "Sociability", "Sociality", item))
+```
+
+### Multilevel    
+#### Figures  
+##### Forest Plots  
+###### Fixed Effects with Credible Intervals  
+```{r}
+loadRData <- function(file, obj){
+    #loads an RData file, and returns it
+    path <- sprintf("%s/05-results/01-q1/02-mlm/02-summary/%s", wd, file)
+    load(path)
+    get(ls()[grepl(obj, ls())])
+}
+
+q1_mlm_fx <- tibble(file = sprintf("%s/05-results/01-q1/02-mlm/02-summary", wd) %>% list.files()) %>%
+  mutate(fx = map2(file, "fx", loadRData)) %>%
+  separate(file, c("study", "category", "name", "item"), sep = "-") %>%
+  mutate(item = str_remove(item, ".RData")) %>%
+  mutate(name = ifelse(study == "ipcs" & name == "Sociability", "Sociality", name)
+         , item = ifelse(study == "ipcs" & item == "Sociability", "Sociality", item))
+
+q1_mlm_fx %>%
+  unnest(fx) %>%
+  filter(term == "value" & name == item & study != "pairs") %>%
+  mutate(name = factor(name, rev(cat_names$name_old), rev(cat_names$name_new))
+         , category = factor(category, cat_names$cat_old, cat_names$cat_new)
+         , study = factor(study, c("ipcs", "sherman", "horstmann"), c("Sample #1\n(Beck & Jackson)", "Sample #2\n(Sherman et al.)", "Sample #3\n(Horstmann et al.)"))) %>%
+  ggplot(aes(x = name, y = estimate)) + 
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high)
+                  , position = "dodge"
+                  , width = .1) + 
+    scale_y_continuous(limits = c(-.4, -.05), breaks = seq(-.4, -.1, .1)) + 
+    geom_point(size = 1.5) +
+    geom_hline(aes(yintercept = 0), linetype = "dashed") +
+    labs(x = NULL, y = "Fixed Effect Attractor Estimate") + 
+    coord_flip() +
+    facet_grid(category ~ study, scales = "free_y", space = "free") + 
+    theme_classic() +
+    theme(axis.text = element_text(face = "bold", size = rel(1.1))
+          , axis.title = element_text(face = "bold", size = rel(1.2))
+          , strip.text = element_text(face = "bold", size = rel(1.1), color = "white")
+          , strip.background = element_rect(fill = "black")
+          , panel.background = element_rect(color = "black", size = 1))
+ggsave(file = sprintf("%s/05-results/04-plots/01-q1/02-mlm/dist-plot/traits.png", wd)
+       , width = 10, height = 5)
+```
+
+###### Fixed Effects with Person-Specific Effects Distributions  
+```{r}
+loadRData <- function(file, obj){
+    #loads an RData file, and returns it
+    path <- sprintf("%s/05-results/01-q1/02-mlm/03-equil/%s", wd, file)
+    load(path)
+    get(ls()[grepl(obj, ls())])
+}
+
+q1_mlm_equil <- tibble(file = sprintf("%s/05-results/01-q1/02-mlm/03-equil", wd) %>% list.files()) %>%
+  mutate(equil = map2(file, "equil", loadRData)) %>%
+  separate(file, c("study", "category", "name", "item"), sep = "-") %>%
+  mutate(item = str_remove(item, ".RData")) %>%
+  filter(study != "pairs") %>%
+  mutate(name = ifelse(study == "ipcs" & name == "Sociability", "Sociality", name)
+         , item = ifelse(study == "ipcs" & item == "Sociability", "Sociality", item))
+
+q1_ind_diff_p_fun <- function(d, term){
+  term2 <- mapvalues(term, c("attr_loc", "attr_str"), c("Attractor Location", "Attractor Strength"), warn_missing = F)
+  lims <- if(term == "attr_loc") c(0,10) else c(-.6, -.05)
+  brk <- if(term == "attr_loc") seq(0,10,2) else seq(-.6, -.1, .1)
+  d %>%
+    filter(name != "overall") %>%
+    ggplot(aes(y = name, x = Estimate, group = name)) + 
+    # geom_density_ridges(aes(group = name, fill = name)) +
+    geom_density_ridges(aes(group = name), fill = "white", color = "white") +
+    scale_x_continuous(limits = lims, breaks = brk) +
+    geom_errorbar(data = d %>% filter(SID == "overall")
+                  , aes(xmin = `Q2.5`, xmax = `Q97.5`)
+                  , position = "dodge"
+                  , width = .1) + 
+    geom_point(data = d %>% filter(SID == "overall")) +
+    geom_hline(aes(yintercept = 0), linetype = "dashed") +
+    labs(y = NULL
+         , x = sprintf("%s Estimate", term2)
+         ) + 
+    # coord_flip() +
+    facet_grid(category ~ study, scales = "free_y", space = "free") + 
+    theme_classic() +
+    theme(axis.text = element_text(face = "bold", size = rel(1.1))
+          , axis.title = element_text(face = "bold", size = rel(1.2))
+          , strip.text = element_text(face = "bold", size = rel(1.1), color = "white")
+          , strip.background = element_rect(fill = "black")
+          , panel.background = element_rect(color = "black", size = 1)
+          , legend.position = "none")
+  ggsave(file = sprintf("%s/05-results/04-plots/01-q1/02-mlm/dist-plot/traits-%s-blank.png", wd, term)
+       , width = 10, height = 5)
+}
+
+q1_mlm_equil_p <- q1_mlm_equil %>%
+  filter(name == item) %>%
+  unnest(equil) %>%
+  mutate(name = factor(name, rev(cat_names$name_old), rev(cat_names$name_new))
+         , category = factor(category, cat_names$cat_old, cat_names$cat_new)
+         , study = factor(study, c("ipcs", "sherman", "horstmann"), c("Sample #1\n(Beck & Jackson)", "Sample #2\n(Sherman et al.)", "Sample #3\n(Horstmann et al.)"))) %>%
+  group_by(term) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate(p = map2(data, term, q1_ind_diff_p_fun))
+```
+
+##### Change as Outcome Plots  
+###### Load Predictions  
+```{r q1 mlm pred load}
+loadRData <- function(file, obj){
+    #loads an RData file, and returns it
+    path <- sprintf("%s/05-results/01-q1/02-mlm/04-predictions/%s", wd, file)
+    load(path)
+    get(ls()[grepl(obj, ls())])
+}
+
+fix_pred <- function(d){
+  if(ncol(d) == 2){
+    bind_cols(
+      d[,1]
+      , d[,2] %>% 
+        as.matrix() %>% 
+        as_tibble() %>% 
+        setNames(c("Estimate", "Est.Error", "conf.low", "conf.high"))
+      ) 
+    } else {
+      bind_cols(
+        d[,1:2]
+        , d[,3] %>% 
+          as.matrix() %>% 
+          as_tibble() %>% 
+          setNames(c("Estimate", "Est.Error", "conf.low", "conf.high"))
+        )
+    }
+}
+
+q1_mlm_pred <- tibble(file = sprintf("%s/05-results/01-q1/02-mlm/04-predictions", wd) %>% list.files()) %>%
+  mutate(rx_pred = map2(file, "rx_pred", loadRData)
+         , fx_pred = map2(file, "fx_pred", loadRData)) %>%
+  separate(file, c("study", "category", "name", "item"), sep = "-") %>%
+  mutate(item = str_remove(item, ".RData")) %>%
+  filter(study != "pairs") %>%
+  mutate(name = ifelse(study == "ipcs" & name == "Sociability", "Sociality", name)
+         , item = ifelse(study == "ipcs" & item == "Sociability", "Sociality", item)
+         , rx_pred = map(rx_pred, fix_pred)
+         , fx_pred = map(fx_pred, fix_pred)) 
+```
+
+###### Combined  
+```{r}
+q1_mlm_cao_plots <- function(d, study, cat){
+  fx <- d %>% filter(SID == "Overall")
+  rx <- d %>% filter(SID != "Overall")
+  
+  rx %>%
+    ggplot(aes(x = value, y = Estimate)) + 
+      geom_line(aes(color = name, group = SID), alpha = .3, size = .3) + 
+      geom_line(data = fx, size = 1.2) +
+      geom_hline(aes(yintercept = 0), linetype = "dashed") + 
+      labs(x = "Level", y = "Change") +
+      facet_wrap(~name, ncol = 3) + 
+      theme_classic() + 
+      theme(
+        legend.position = "none"
+        , strip.background = element_blank()
+        , strip.text = element_text(face = "bold", size = rel(1.1))
+        , axis.text = element_text(face = "bold")
+        , axis.title = element_text(face = "bold", size = rel(1))
+        , plot.title = element_text(hjust = .5, face = "bold")
+        , panel.background = element_rect(color = "black", size = 1)
+        )
+  ggsave(file=sprintf("%s/05-results/04-plots/01-q1/02-mlm/%s_%s_cao_plot_random.png", wd, study, cat), width = 6, height = 5)
+  ggsave(file=sprintf("%s/05-results/04-plots/01-q1/02-mlm/%s_%s_cao_plot_random.pdf", wd, study, cat), width = 6, height = 5)
+}
+
+q1_mlm_pred %>%
+  filter(name == item) %>%
+  mutate(comb = map2(rx_pred, fx_pred, ~(.y) %>% mutate(SID = "Overall") %>% full_join(.x))) %>%
+  select(-rx_pred, -fx_pred) %>%
+  unnest(comb) %>%
+  mutate(name = factor(name, cat_names$name_old, cat_names$name_new)) %>%
+  group_by(study, category) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate(p = pmap(list(data, study, category), q1_mlm_cao_plots))
+```
+
+
+###### Overall  
+```{r q1 mlm pred plot}
+p1 <- q1_mlm_pred %>%
+  select(-rx_pred) %>%
+  filter(name == item) %>%
+  unnest(fx_pred) %>%
+  filter(category == "pers") %>%
+  ggplot(aes(x = value, y = Estimate)) + 
+    geom_ribbon(aes(fill = name, ymin = conf.low, ymax = conf.high), alpha = .2) + 
+    geom_line(aes(color = name)) +
+    geom_hline(aes(yintercept = 0), linetype = "dashed") + 
+    # scale_y_continuous(lim = lims, breaks = brk) +
+    labs(x = "Level", y = "Change", title = "Personality States") +
+    facet_grid(study ~ name) + 
+    theme_classic() + 
+    theme(
+      legend.position = "none"
+      , strip.background = element_blank()
+      , strip.text = element_text(face = "bold", size = rel(1.1))
+      , axis.text = element_text(face = "bold")
+      , axis.title = element_text(face = "bold", size = rel(1))
+      , plot.title = element_text(hjust = .5, face = "bold")
+      , panel.background = element_rect(color = "black", size = 1)
+      )
+
+p2 <- q1_mlm_pred %>%
+  select(-rx_pred) %>%
+  filter(name == item) %>%
+  unnest(fx_pred) %>%
+  filter(category != "pers") %>%
+  ggplot(aes(x = value, y = Estimate)) + 
+    geom_ribbon(aes(fill = name, ymin = conf.low, ymax = conf.high), alpha = .2) + 
+    geom_line(aes(color = name)) +
+    geom_hline(aes(yintercept = 0), linetype = "dashed") + 
+    # scale_y_continuous(lim = lims, breaks = brk) +
+    labs(x = "Level", y = "Change", title = "Situation Characteristics") +
+    facet_grid(study ~ name) + 
+    theme_classic() + 
+    theme(
+      legend.position = "none"
+      , strip.background = element_blank()
+      , strip.text = element_text(face = "bold", size = rel(1.1))
+      , axis.text = element_text(face = "bold")
+      , axis.title = element_text(face = "bold", size = rel(1))
+      , plot.title = element_text(hjust = .5, face = "bold")
+      , panel.background = element_rect(color = "black", size = 1)
+      )
+  
+plot_grid(p1, p2, rel_widths = c(.4, .6))
+```
+
+
+###### Participant Level
+
+```{r q1 mlm pred plots px}
+q1_mlm_cao_plots <- q1_mlm_pred %>%
+  select(-fx_pred) %>%
+  filter(name == item) %>%
+  mutate(name = factor(name, cat_names$name_old, cat_names$name_new)) %>%
+  # mutate(group = ifelse(item %in% c("E", "A", "C", "N", "O", (cat_names %>% filter(cat_old == "sit"))$item_old), "scale", "items")) %>%
+  # left_join(cat_names %>% select(name = name_old, name_new, category = cat_old, cat_new, item = item_old, item_new))
+  unnest(rx_pred) %>%
+  group_by(category, SID, study) %>%
+  nest() %>%
+  ungroup() 
+
+q1_mlm_cao_plot_fun <- function(d, study, category, sid){
+  std <- mapvalues(
+    study
+    , c("ipcs", "sherman", "horstmann")
+    , c("Sample #1\n(Beck & Jackson)", "Sample #2\n(Sherman et al.)", "Sample #3\n(Horstmann et al.)")
+    , warn_missing = F
+    )
+  mx <- ceiling(max(c(max(d$Estimate), abs(min(d$Estimate)))))
+  lims <- c(-1*mx, mx)
+  brk <- seq(-1*mx, mx, length.out = 5)
+  d %>%
+    ggplot(aes(x = value, y = Estimate)) + 
+      geom_ribbon(aes(fill = name, ymin = conf.low, ymax = conf.high), alpha = .2) + 
+      geom_line(aes(color = name)) +
+      geom_hline(aes(yintercept = 0), linetype = "dashed") + 
+      scale_y_continuous(lim = lims, breaks = brk) +
+      labs(x = "Level", y = "Change", title = sprintf("%s: %s", std, sid)) +
+      facet_wrap(~name, ncol = 3, scales = "free") + 
+      theme_classic() + 
+      theme(
+        legend.position = "none"
+        , strip.background = element_blank()
+        , strip.text = element_text(face = "bold", size = rel(1.1))
+        , axis.text = element_text(face = "bold")
+        , axis.title = element_text(face = "bold", size = rel(1))
+        , plot.title = element_text(hjust = .5, face = "bold"))
+  ggsave(file = sprintf("%s/05-results/04-plots/01-q1/02-mlm/cao-plot/%s-%s-%s.png", wd, study, sid, category)
+         , width = 8, height = 8)
+  ggsave(file = sprintf("%s/05-results/04-plots/01-q1/02-mlm/cao-plot/%s-%s-%s.pdf", wd, study, sid, category)
+         , width = 8, height = 8)
+}
+
+q1_mlm_cao_plots %>%
+  mutate(p = pmap(list(data, study, category, SID), q1_mlm_cao_plot_fun))
+```
+
+#### Tables  
+
+
+
+

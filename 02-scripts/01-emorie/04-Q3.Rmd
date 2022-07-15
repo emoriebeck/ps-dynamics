@@ -1,0 +1,573 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# Question 3: Correlations    
+
+## Data Setup (Univariate and Bivariate)  
+### Idiographic and Other Non-Latent Correlations  
+#### Study 1: PAIRS  
+```{r q3 load pairs idio}
+load(sprintf("%s/03-data/01-pairs/02-clean-data/pairs-clean-edb.RData", wd))
+```
+
+```{r}
+q3_pairs_traits <- pairs_states_long %>% 
+  filter(category == "pers") %>%
+  group_by(SID, name, item) %>% 
+  summarize(t_value = mean(value, na.rm = T)
+            , t_value2 = t_value^2) %>%
+  ungroup() %>%
+  rename(t_name = name, t_item = item) %>%
+  group_by(t_name, t_item) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q3 pairs traits save}
+save_fun <- function(d, tname, titem){
+  save(d, file = sprintf("%s/03-data/01-pairs/09-q3-traits/%s-%s.RData", wd, tname, titem))
+}
+
+q3_pairs_traits %>%
+  mutate(d = pmap(list(data, t_name, t_item), save_fun))
+```
+
+#### Study 2: IPCS  
+```{r q3 load ipcs idio}
+load(sprintf("%s/03-data/02-ipcs/02-clean-data/ipcs-clean-edb.RData", wd))
+```
+
+```{r}
+q3_ipcs_traits <- ipcs_states_long %>% 
+  filter(category == "pers") %>%
+  group_by(SID, name, item) %>% 
+  summarize(t_value = mean(value, na.rm = T)
+            , t_value2 = t_value^2) %>%
+  ungroup() %>%
+  rename(t_name = name, t_item = item) %>%
+  group_by(t_name, t_item) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q3 ipcs traits save}
+save_fun <- function(d, tname, titem){
+  save(d, file = sprintf("%s/03-data/02-ipcs/09-q3-traits/%s-%s.RData", wd, tname, titem))
+}
+
+q3_ipcs_traits %>%
+  mutate(d = pmap(list(data, t_name, t_item), save_fun))
+```
+
+#### Study 3: Sherman et al. (2015)  
+```{r q3 load sherman idio}
+load(sprintf("%s/03-data/03-sherman/02-clean-data/sherman-clean-edb.RData", wd))
+```
+
+```{r}
+q3_sherman_traits <- sherman_states_long %>% 
+  filter(category == "pers") %>%
+  group_by(SID, name, item) %>% 
+  summarize(t_value = mean(value, na.rm = T)
+            , t_value2 = t_value^2) %>%
+  ungroup() %>%
+  rename(t_name = name, t_item = item) %>%
+  group_by(t_name, t_item) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q3 sherman traits save}
+save_fun <- function(d, tname, titem){
+  save(d, file = sprintf("%s/03-data/03-sherman/09-q3-traits/%s-%s.RData", wd, tname, titem))
+}
+
+q3_sherman_traits %>%
+  mutate(d = pmap(list(data, t_name, t_item), save_fun))
+```
+
+#### Study 4: Horstmann et al.  
+```{r q3 load horstmann idio}
+load(sprintf("%s/03-data/04-horstmann/02-clean-data/horstmann-clean-edb.RData", wd))
+```
+
+```{r}
+q3_horstmann_traits <- horstmann_states_long %>% 
+  filter(category == "pers") %>%
+  group_by(SID, name, item) %>% 
+  summarize(t_value = mean(value, na.rm = T)
+            , t_value2 = t_value^2) %>%
+  ungroup() %>%
+  rename(t_name = name, t_item = item) %>%
+  group_by(t_name, t_item) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q3 horstmann traits save}
+save_fun <- function(d, tname, titem){
+  save(d, file = sprintf("%s/03-data/04-horstmann/09-q3-traits/%s-%s.RData", wd, tname, titem))
+}
+
+q3_horstmann_traits %>%
+  mutate(d = pmap(list(data, t_name, t_item), save_fun))
+```
+
+### Multilevel Models  
+#### Study 1: PAIRS  
+```{r q3 load pairs}
+load(sprintf("%s/03-data/01-pairs/02-clean-data/pairs-clean-edb.RData", wd))
+```
+
+##### Univariate  
+```{r q3 pairs mlm-univar setup}
+q3_mlm_pairs_nested <- pairs_states_long %>%
+  group_by(SID, category, name, item) %>%  
+  filter(n() >= 19 & sd(value) != 0) %>%
+  left_join(
+    pairs_states_long %>% 
+      filter(category == "pers") %>%
+      group_by(SID, name, item) %>% 
+      summarize(t_value = mean(value, na.rm = T)
+                , t_value2 = t_value^2) %>%
+      ungroup() %>%
+      rename(t_name = name, t_item = item)
+  ) %>%
+  group_by(category, name, item, t_name, t_item) %>%
+  nest() %>%
+  ungroup() 
+```
+
+```{r q3 pairs mlm-univar save}
+save_fun <- function(d, cat, name, item, tname, titem){
+  save(d, file = sprintf("%s/03-data/01-pairs/07-q3-mlm-univar/%s-%s-%s-%s-%s.RData", wd, cat, name, item, tname, titem))
+}
+
+q3_mlm_pairs_nested %>%
+  mutate(d = pmap(list(data, category, name, item, t_name, t_item), save_fun))
+```
+
+##### Bivariate  
+
+```{r q3 pairs mlm-bivar setup}
+pairs_states_long <- pairs_states_long %>%
+  mutate(value2 = value^2)
+
+q3_mlm_pairs_nested <- pairs_states_long %>% 
+  filter(category == "pers") %>%
+  select(SID, Date, tdif, p_name = name, p_item = item, p_value = value, p_value2 = value2, p_delta_value = delta_value) %>%
+  full_join(
+    pairs_states_long %>% 
+      filter(category == "sit") %>%
+      select(SID, tdif, Date, s_name = name, s_value = value, s_value2 = value2, s_delta_value = delta_value)
+  ) %>%
+  filter(!is.na(p_item) & ! is.na(s_name) & !is.na(p_delta_value) & !is.na(s_delta_value)) %>%
+  group_by(SID, p_name, p_item, s_name) %>%
+  filter(n() >= 19 & sd(p_delta_value) != 0 & sd(s_delta_value) != 0) %>%
+  mutate(p_value_c = p_value - mean(p_value, na.rm = T)
+         , s_value_c = s_value - mean(s_value, na.rm = T)) %>%
+  full_join(
+    pairs_states_long %>% 
+      filter(category == "pers") %>%
+      group_by(SID, name, item) %>% 
+      summarize(t_value = mean(value, na.rm = T)
+                , t_value2 = t_value^2) %>%
+      ungroup() %>%
+      rename(t_name = name, t_item = item)
+  ) %>%
+  group_by(p_name, p_item, s_name, t_name, t_item) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q3 pairs mlm-bivar save}
+save_fun <- function(d, pname, pitem, sname, tname, titem){
+  save(d, file = sprintf("%s/03-data/01-pairs/08-q3-mlm-bivar/%s-%s-%s-%s-%s.RData", wd, pname, pitem, sname, tname, titem))
+}
+
+q3_mlm_pairs_nested %>%
+  mutate(d = pmap(list(data, p_name, p_item, s_name, t_name, t_item), save_fun))
+```
+
+
+#### Study 2: IPCS  
+```{r q3 load ipcs}
+load(sprintf("%s/03-data/02-ipcs/02-clean-data/ipcs-clean-edb.RData", wd))
+```
+
+##### Univariate  
+```{r q3 ipcs mlm-univar setup}
+q3_mlm_ipcs_nested <- ipcs_states_long %>%
+  group_by(SID, category, name, item) %>%  
+  filter(n() >= 19 & sd(value) != 0) %>%
+  left_join(
+    ipcs_states_long %>% 
+      filter(category == "pers") %>%
+      group_by(SID, name, item) %>% 
+      summarize(t_value = mean(value, na.rm = T)
+                , t_value2 = t_value^2) %>%
+      ungroup() %>%
+      rename(t_name = name, t_item = item)
+  ) %>%
+  group_by(category, name, item, t_name, t_item) %>%
+  nest() %>%
+  ungroup() 
+```
+
+```{r q3 ipcs mlm-univar save}
+save_fun <- function(d, cat, name, item, tname, titem){
+  save(d, file = sprintf("%s/03-data/02-ipcs/07-q3-mlm-univar/%s-%s-%s-%s-%s.RData", wd, cat, name, item, tname, titem))
+}
+
+q3_mlm_ipcs_nested %>%
+  mutate(d = pmap(list(data, category, name, item, t_name, t_item), save_fun))
+```
+
+##### Bivariate  
+
+```{r q3 ipcs mlm-bivar setup}
+ipcs_states_long <- ipcs_states_long %>%
+  mutate(value2 = value^2)
+
+q3_mlm_ipcs_nested <- ipcs_states_long %>% 
+  filter(category == "pers") %>%
+  select(SID, Date, tdif, p_name = name, p_item = item, p_value = value, p_value2 = value2, p_delta_value = delta_value) %>%
+  full_join(
+    ipcs_states_long %>% 
+      filter(category == "sit") %>%
+      select(SID, Date, tdif, s_name = name, s_value = value, s_value2 = value2, s_delta_value = delta_value)
+  ) %>%
+  filter(!is.na(p_item) & ! is.na(s_name) & !is.na(p_delta_value) & !is.na(s_delta_value)) %>%
+  group_by(SID, p_name, p_item, s_name) %>%
+  filter(n() >= 19 & sd(p_delta_value) != 0 & sd(s_delta_value) != 0) %>%
+  mutate(p_value_c = p_value - mean(p_value, na.rm = T)
+         , s_value_c = s_value - mean(s_value, na.rm = T)) %>%
+  full_join(
+    ipcs_states_long %>% 
+      filter(category == "pers") %>%
+      group_by(SID, name, item) %>% 
+      summarize(t_value = mean(value, na.rm = T)
+                , t_value2 = t_value^2) %>%
+      ungroup() %>%
+      rename(t_name = name, t_item = item)
+  ) %>%
+  group_by(p_name, p_item, s_name, t_name, t_item) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q3 ipcs mlm-bivar save}
+save_fun <- function(d, pname, pitem, sname, tname, titem){
+  save(d, file = sprintf("%s/03-data/02-ipcs/08-q3-mlm-bivar/%s-%s-%s-%s-%s.RData", wd, pname, pitem, sname, tname, titem))
+}
+
+q3_mlm_ipcs_nested %>%
+  mutate(d = pmap(list(data, p_name, p_item, s_name, t_name, t_item), save_fun))
+```
+
+
+#### Study 3: Sherman et al., 2015  
+```{r q3 load sherman}
+load(sprintf("%s/03-data/03-sherman/02-clean-data/sherman-clean-edb.RData", wd))
+```
+
+##### Univariate  
+```{r q3 sherman mlm-univar setup}
+q3_mlm_sherman_nested <- sherman_states_long %>%
+  group_by(SID, category, name, item) %>%  
+  filter(n() >= 19 & sd(value) != 0) %>%
+  full_join(
+    sherman_states_long %>% 
+      filter(category == "pers") %>%
+      group_by(SID, name, item) %>% 
+      summarize(t_value = mean(value, na.rm = T)
+                , t_value2 = t_value^2) %>%
+      ungroup() %>%
+      rename(t_name = name, t_item = item)
+  ) %>%
+  group_by(category, name, item, t_name, t_item) %>%
+  nest() %>%
+  ungroup() 
+```
+
+```{r q3 sherman mlm-univar save}
+save_fun <- function(d, cat, name, item, tname, titem){
+  save(d, file = sprintf("%s/03-data/03-sherman/07-q3-mlm-univar/%s-%s-%s-%s-%s.RData", wd, cat, name, item, tname, titem))
+}
+
+q3_mlm_sherman_nested %>%
+  mutate(d = pmap(list(data, category, name, item, t_name, t_item), save_fun))
+```
+
+##### Bivariate  
+
+```{r q3 sherman mlm-bivar setup}
+sherman_states_long <- sherman_states_long %>%
+  mutate(value2 = value^2)
+
+q3_mlm_sherman_nested <- sherman_states_long %>% 
+  filter(category == "pers") %>%
+  select(SID, Date, tdif, p_name = name, p_item = item, p_value = value, p_value2 = value2, p_delta_value = delta_value) %>%
+  full_join(
+    sherman_states_long %>% 
+      filter(category == "sit") %>%
+      select(SID, Date, tdif, s_name = name, s_value = value, s_value2 = value2, s_delta_value = delta_value)
+  ) %>%
+  filter(!is.na(p_item) & ! is.na(s_name) & !is.na(p_delta_value) & !is.na(s_delta_value)) %>%
+  group_by(SID, p_name, p_item, s_name) %>%
+  filter(n() >= 19 & sd(p_delta_value) != 0 & sd(s_delta_value) != 0) %>%
+  mutate(p_value_c = p_value - mean(p_value, na.rm = T)
+         , s_value_c = s_value - mean(s_value, na.rm = T)) %>%
+  full_join(
+    sherman_states_long %>% 
+      filter(category == "pers") %>%
+      group_by(SID, name, item) %>% 
+      summarize(t_value = mean(value, na.rm = T)
+                , t_value2 = t_value^2) %>%
+      ungroup() %>%
+      rename(t_name = name, t_item = item)
+  ) %>%
+  group_by(p_name, p_item, s_name, t_name, t_item) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q3 sherman mlm-bivar save}
+save_fun <- function(d, pname, pitem, sname, tname, titem){
+  save(d, file = sprintf("%s/03-data/03-shermann/08-q3-mlm-bivar/%s-%s-%s-%s-%s.RData", wd, pname, pitem, sname, tname, titem))
+}
+
+q3_mlm_shermann_nested %>%
+  mutate(d = pmap(list(data, p_name, p_item, s_name, t_name, t_item), save_fun))
+```
+
+#### Study 4: Horstmann et al., 2021  
+```{r q3 load horstmann}
+load(sprintf("%s/03-data/04-horstmann/02-clean-data/horstmann-clean-edb.RData", wd))
+```
+
+##### Univariate  
+```{r q3 horstmann mlm-univar setup}
+q3_mlm_horstmann_nested <- horstmann_states_long %>%
+  group_by(SID, category, name, item) %>%  
+  filter(n() >= 19 & sd(value) != 0) %>%
+  full_join(
+    horstmann_states_long %>% 
+      filter(category == "pers") %>%
+      group_by(SID, name, item) %>% 
+      summarize(t_value = mean(value, na.rm = T)
+                , t_value2 = t_value^2) %>%
+      ungroup() %>%
+      rename(t_name = name, t_item = item)
+  ) %>%
+  group_by(category, name, item, t_name, t_item) %>%
+  nest() %>%
+  ungroup() 
+```
+
+```{r q3 horstmann mlm-univar save}
+save_fun <- function(d, cat, name, item, tname, titem){
+  save(d, file = sprintf("%s/03-data/04-horstmann/07-q3-mlm-univar/%s-%s-%s-%s-%s.RData", wd, cat, name, item, tname, titem))
+}
+
+q3_mlm_horstmann_nested %>%
+  mutate(d = pmap(list(data, category, name, item, t_name, t_item), save_fun))
+```
+
+##### Bivariate  
+
+```{r q3 horstmann mlm-bivar setup}
+horstmann_states_long <- horstmann_states_long %>%
+  mutate(value2 = value^2)
+
+q3_mlm_horstmann_nested <- horstmann_states_long %>% 
+  filter(category == "pers") %>%
+  select(SID, Date, tdif, p_name = name, p_item = item, p_value = value, p_value2 = value2, p_delta_value = delta_value) %>%
+  full_join(
+    horstmann_states_long %>% 
+      filter(category == "sit") %>%
+      select(SID, Date, tdif, s_name = name, s_value = value, s_value2 = value2, s_delta_value = delta_value)
+  ) %>%
+  filter(!is.na(p_item) & ! is.na(s_name) & !is.na(p_delta_value) & !is.na(s_delta_value)) %>%
+  group_by(SID, p_name, p_item, s_name) %>%
+  filter(n() >= 19 & sd(p_delta_value) != 0 & sd(s_delta_value) != 0) %>%
+  mutate(p_value_c = p_value - mean(p_value, na.rm = T)
+         , s_value_c = s_value - mean(s_value, na.rm = T)) %>%
+  full_join(
+    horstmann_states_long %>% 
+      filter(category == "pers") %>%
+      group_by(SID, name, item) %>% 
+      summarize(t_value = mean(value, na.rm = T)
+                , t_value2 = t_value^2) %>%
+      ungroup() %>%
+      rename(t_name = name, t_item = item)
+  ) %>%
+  group_by(p_name, p_item, s_name, t_name, t_item) %>%
+  nest() %>%
+  ungroup()
+```
+
+```{r q3 horstmann mlm-bivar save}
+save_fun <- function(d, pname, pitem, sname, tname, titem){
+  save(d, file = sprintf("%s/03-data/04-horstmann/08-q3-mlm-bivar/%s-%s-%s-%s-%s.RData", wd, pname, pitem, sname, tname, titem))
+}
+
+q3_mlm_horstmann_nested %>%
+  mutate(d = pmap(list(data, p_name, p_item, s_name, t_name, t_item), save_fun))
+```
+
+## Models  
+### Univariate  
+#### Idiographic  
+```{r}
+function(){
+  study2 <- mapvalues(
+    study
+    , c("pairs", "ipcs", "sherman", "horstmann")
+    , c("01-pairs", "02-ipcs", "03-sherman", "04-horstmann")
+    , warn_missing = F
+    )
+  
+  sprintf("%s/05-results/01-q1/01-idio/03-equil", wd) %>% list.files()
+}
+```
+
+#### Multilevel  
+```{r q1 mlm model function}
+q1_mlm_model_fun <- function(study, sid, cat, name, item, t_name, t_item){
+  study2 <- mapvalues(
+    study
+    , c("pairs", "ipcs", "sherman", "horstmann")
+    , c("01-pairs", "02-ipcs", "03-sherman", "04-horstmann")
+    , warn_missing = F
+    )
+  
+  # load the data 
+  load(sprintf("%s/03-data/%s/04-q1-mlm/%s-%s-%s.RData", wd, study2, cat, name, item, t_name, t_item))
+  
+  # setup the formula 
+  # f <- if(lin = "linear") bf(delta_value ~ 1 + value + t_value + value:t_value + (1 + value | SID)) else bf(delta_value ~ 1 + value + t_value + t_value2 + value:t_value + value:t_value2 + (1 + value | SID))
+  
+  # load the sample model 
+  if (lin == "linear") load(sprintf("%s/05-results/03-q3/02-mlm/sample-mlm-linear-univar.RData", wd)) else load(sprintf("%s/05-results/03-q3/02-mlm/sample-mlm-quad-univar.RData", wd))
+  
+  # run the model using update for faster compilation 
+  m <- update(
+    m1
+    , newdata = d
+    , iter = 2000
+    , warmup = 1000
+    , cores = 4
+  )
+  mz <- parameters::standardize()
+  save(m, file = sprintf("%s/05-results/01-q1/02-mlm/01-models/%s-%s-%s-%sRData", wd, study, cat, name, item))
+  
+  fx <- broom.mixed::tidy(m)
+  rx <- coef(m, probs = c(0.025, 0.975))[[1]] %>% array_tree(3) %>% 
+      tibble(term = names(.), data = .) %>% 
+      mutate(data = map(data, ~(.) %>% data.frame %>% 
+        rownames_to_column("SID"))) %>% 
+      unnest(data) %>% 
+      select(term, SID, estimate = Estimate, conf.low = Q2.5, conf.high = Q97.5)
+  save(fx, rx, file = sprintf("%s/05-results/01-q1/01-idio/02-summary/%s-%s-%s-%sRData", wd, study, cat, name, item))
+  
+  draws <- as_draws_df(m)
+  fx_draws <- draws %>% select(-contains("r_SID["))
+  rx_draws <- draws %>% 
+    mutate(n = 1:n()) %>%
+    select(contains("r_SID["), n) %>% 
+    pivot_longer(
+      names_to = "term"
+      , values_to = "estimate"
+      , cols = -n
+    ) %>%
+    mutate(
+      term = str_remove_all(term, "r_SID\\[")
+      , term = str_remove_all(term, "[, ]")
+      , term = str_remove_all(term, "\\]")
+      , SID = str_remove_all(term, "[A-Z a-z]")
+      , term = str_remove_all(term, "[0-9]")
+    ) %>%
+    pivot_wider(names_from = "term", values_from = "estimate")
+  save(fx_draws, rx_draws
+       , file = sprintf("%s/05-results/01-q1/02-mlm/05-draws/%s-%s-%s-%s.RData", wd, study, cat, name, item))
+  
+  # find attractor location by solving for x
+  # linear               # quadratic
+  # y = b0 + b1*x        x = (-b +/ sqrt(b2 - 4ac))/2a
+  # 0 = b0 + b1*x        
+  # -b0 = b1*x         
+  # x = -b0/b1
+  fx_equil <- fx_draws %>% 
+    as.data.frame() %>%
+    mutate(attr_loc = -1*b_Intercept/b_value)
+  rx_equil <- rx_draws %>%
+    mutate(attr_loc = -1*Intercept/value)
+  
+  # find attractor strength
+  equil <- fx_equil %>% 
+    mutate(n = 1:n(), SID = "overall") %>% 
+    select(SID, n, attr_loc, attr_str = b_value) %>%
+    full_join(
+      rx_equil %>% 
+        select(n, SID, attr_loc, attr_str = value)
+    )
+  save(equil, file = sprintf("%s/05-results/01-q1/01-idio/03-equil/%s-%s-%s-%s-%s.RData", wd, study, cat, name, item))
+  
+  # setup predictions for plotting
+  frame <- tibble(value = seq(0,10,.2))
+  fx_pred <- bind_cols(frame, fitted(m, newdata = frame, re_formula = NA))
+  frame <- crossing(SID = unique(rx_equil$SID), value = seq(0,10,.2))
+  rx_pred <- bind_cols(frame, fitted(m, newdata = frame))
+  save(fx_pred, rx_pred
+       , file = sprintf("%s/05-results/01-q1/01-idio/04-predictions/%s-%s-%s-%s.RData", wd, study, cat, name, item))
+  
+  # clean up and return nothing
+  rm(list = c("frame", "fx_pred", "m1", "m", "fx", "rx", "fx_draws", "rx_draws", "equil", "draws"))
+  gc()
+  return(T)
+}
+```
+
+#### Sample Models  
+```{r q1 mlm sample model}
+# load sample data
+load("/Volumes/Emorie/other projects/ps-oscillators/03-data/02-ipcs/07-q3-mlm-univar/pers-A-A-A-A.RData")
+
+# setup the formula 
+f <- bf(delta_value ~ 1 + value + t_value + value:t_value + (1 + value | SID))
+
+# sample model
+m1 <- brm(f
+         , data = d
+         , iter = 100
+         , warmup = 10
+         , cores = 4
+         )
+save(m1, file = sprintf("%s/05-results/03-q3/02-mlm/sample-mlm-linear-univar.RData", wd))
+
+# setup the formula 
+f <- bf(delta_value ~ 1 + value + t_value + t_value2 + value:t_value + value:t_value2 + (1 + value | SID))
+
+# sample model
+m1 <- update(m1
+         , formula = f
+         , newdata = d
+         , iter = 100
+         , warmup = 10
+         , cores = 4
+         )
+save(m1, file = sprintf("%s/05-results/03-q3/02-mlm/sample-mlm-quad-univar.RData", wd))
+```
+
+
+### Bivariate  
+#### Idiographic  
+#### Multilevel  
+
+```{r}
+
+```
+
